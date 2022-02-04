@@ -4,6 +4,7 @@ namespace mindtwo\NativeEnum;
 
 use Illuminate\Support\Arr;
 use Illuminate\Support\Collection;
+use Illuminate\Support\Facades\Lang;
 use mindtwo\NativeEnum\Contracts\LocalizedEnum;
 
 trait BaseEnum

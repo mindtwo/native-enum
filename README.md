@@ -18,14 +18,18 @@ Enojy the Package!
 
 ## Install
 
-Via Composer
+### Requirements
+Laravel 9 or higher
+PHP 8.0 or higher
+
+### Composer install
 
 ``` bash
 $ composer require mindtwo/native-enum
 ```
 
 
-## Enum Creation
+## Enum creation
 
 ```php
 namespace App\Enums;
@@ -41,7 +45,7 @@ enum UserRole: int
 
 ## Usage
 
-### Base Usage
+### Base usage
 ```php
 TestEnum::getRandomValue();
 TestEnum::getRandomName();
@@ -69,8 +73,10 @@ TestEnum::getNames(50);
 TestEnum::getNames([10,50]);
 ```
 
-### Localized Enum
+### Localized enums
+
 The Enum has to implement the `LocalizedEnum` interface:
+
 ```php
 namespace App\Enums;
 
@@ -83,7 +89,7 @@ enum UserRole: int implements LocalizedEnum
 }
 ```
 
-Translation files can be placed here `lang/en/enums.php`
+Translation files can be placed here `lang/en/enums.php` like:
 
 ```php
 use \App\Enums;
@@ -98,7 +104,6 @@ return [
 ];
 
 ```
-
 
 ## Change log
 

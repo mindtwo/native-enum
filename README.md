@@ -20,7 +20,7 @@ Enojy the Package!
 
 ### Requirements
 Laravel 9 or higher
-PHP 8.0 or higher
+PHP 8.1 or higher
 
 ### Composer install
 

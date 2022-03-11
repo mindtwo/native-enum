@@ -9,24 +9,12 @@
 
 [![mindtwo GmbH](https://github.com/mindtwo/native-enum/blob/master/assets/header.png?raw=true)](https://www.mindtwo.de/)
 
-Inspired by the package `BenSampo/laravel-enum` this package is adapted to the new native enums in PHP 8.1.
+Inspired by the package [BenSampo/laravel-enum](https://github.com/BenSampo/laravel-enum) this package is adapted to the new native enums in PHP 8.1.
 Based on these new enums the native functions are extended to work easily with them in Laravel based systems.
-
-Enojy the Package!
 
 Everyone is welcome to contribute.
 
-## Structure
-
-If any of the following are applicable to your project, then the directory structure should follow industry best practices by being named the following.
-
-```
-bin/
-src/
-tests/
-vendor/
-```
-
+Enojy the Package!
 
 ## Install
 
@@ -36,9 +24,56 @@ Via Composer
 $ composer require mindtwo/native-enum
 ```
 
+
+## Enum Creation
+
+```php
+namespace App\Enums;
+
+enum UserRole: int
+{
+    use BaseEnum;
+    
+    case ADMIN = 10;
+    case CUSTOMER = 50;
+}
+```
+
 ## Usage
 
-``` php
+### Base Usage
+```php
+TestEnum::getRandomValue();
+TestEnum::getRandomName();
+TestEnum::getRandomInstance();
+TestEnum::asSelectArray();
+TestEnum::asArray();
+TestEnum::getValues();
+TestEnum::getNames();
+```
+
+### Get specific enum values
+```php
+TestEnum::getValues('ADMIN');
+TestEnum::getValues(UserRole::ADMIN);
+TestEnum::getValues([UserRole::ADMIN]);
+TestEnum::getValues('CUSTOMER');
+TestEnum::getValues(UserRole::CUSTOMER);
+TestEnum::getValues([UserRole::CUSTOMER]);
+```
+
+### Get specific enum names
+```php
+TestEnum::getNames(10);
+TestEnum::getNames(50);
+TestEnum::getNames([10,50]);
+```
+
+### Localized Enum
+The Enum has to implement the `LocalizedEnum` interface:
+```php
+namespace App\Enums;
+
 enum UserRole: int implements LocalizedEnum
 {
     use BaseEnum;
@@ -47,6 +82,23 @@ enum UserRole: int implements LocalizedEnum
     case CUSTOMER = 50;
 }
 ```
+
+Translation files can be placed here `lang/en/enums.php`
+
+```php
+use \App\Enums;
+
+return [
+
+    Enums\UserRole::class => [
+        Enums\UserRole::ADMIN->name => 'Administrator',
+        Enums\UserRole::CUSTOMER->name => 'Customer',
+    ],
+
+];
+
+```
+
 
 ## Change log
 

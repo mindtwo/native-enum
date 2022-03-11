@@ -7,7 +7,7 @@
 [![Quality Score][ico-code-quality]][link-code-quality]
 [![Total Downloads][ico-downloads]][link-downloads]
 
-[![mindtwo GmbH](https://www.mindtwo.de/downloads/doodles/github/repository-header.png)](https://www.mindtwo.de/)
+[![mindtwo GmbH](https://github.com/mindtwo/native-enum/blob/master/assets/header.png?raw=true)](https://www.mindtwo.de/)
 
 Inspired by the package `BenSampo/laravel-enum` this package is adapted to the new native enums in PHP 8.1.
 Based on these new enums the native functions are extended to work easily with them in Laravel based systems.

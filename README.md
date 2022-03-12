@@ -1,4 +1,4 @@
-# Native Laravel PHP 8.1 Enums 
+# Laravel Native PHP 8.1 Enums 
 
 [![Latest Version on Packagist][ico-version]][link-packagist]
 [![Software License][ico-license]](LICENSE.md)

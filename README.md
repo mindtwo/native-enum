@@ -3,8 +3,6 @@
 [![Latest Version on Packagist][ico-version]][link-packagist]
 [![Software License][ico-license]](LICENSE.md)
 [![Build Status][ico-travis]][link-travis]
-[![Coverage Status][ico-scrutinizer]][link-scrutinizer]
-[![Quality Score][ico-code-quality]][link-code-quality]
 [![Total Downloads][ico-downloads]][link-downloads]
 
 [![mindtwo GmbH](https://github.com/mindtwo/native-enum/blob/master/assets/header.png?raw=true)](https://www.mindtwo.de/)
@@ -15,6 +13,20 @@ Based on these new enums the native functions are extended to work easily with t
 Everyone is welcome to contribute.
 
 Enojy the Package!
+
+## Index
+- [Install](Install)
+  - [Requirements](#requirements)
+  - [Composer install](#composerinstall)
+- [Create enum](#createenum)
+  - [Artisan command](#artisancommand)
+  - [Manual enum creation](#manualenumcreation)
+- [Usage](#usage)
+  - [Base usage](#baseusage)
+  - [Get specific enum values](#getspecificenum alues)
+  - [Get specific enum names](#getspecificenumnames) 
+  - [Use static calls to get the primitive value](#usestaticcallstogettheprimitivevalue) 
+  - [Localized enum](#localizedenum)
 
 ## Install
 
@@ -28,7 +40,8 @@ PHP 8.1 or higher
 $ composer require mindtwo/native-enum
 ```
 
-## Enum Definition
+## Create enum
+### Artisan command
 You can use the following Artisan command to generate a new native enum:
 
 ```php
@@ -39,7 +52,7 @@ php artisan make:enum UserRole
 php artisan make:enum UserRole --localized
 ```
 
-### Manual Enum Definition
+### Manual enum creation
 You can also create a new native enum manually. The structure should look like this:
 
 ```php
@@ -56,35 +69,41 @@ enum UserRole: int
 
 ## Usage
 
-### Base Usage
+### Base usage
 ```php
-TestEnum::getRandomValue();
-TestEnum::getRandomName();
-TestEnum::getRandomInstance();
-TestEnum::asSelectArray();
-TestEnum::asArray();
-TestEnum::getValues();
-TestEnum::getNames();
+UserRole::getRandomValue();
+UserRole::getRandomName();
+UserRole::getRandomInstance();
+UserRole::asSelectArray();
+UserRole::asArray();
+UserRole::getValues();
+UserRole::getNames();
 ```
 
-### Get Specific Enum Values
+### Get specific enum values
 ```php
-TestEnum::getValues('ADMIN');
-TestEnum::getValues(UserRole::ADMIN);
-TestEnum::getValues([UserRole::ADMIN]);
-TestEnum::getValues('CUSTOMER');
-TestEnum::getValues(UserRole::CUSTOMER);
-TestEnum::getValues([UserRole::CUSTOMER]);
+UserRole::getValues('ADMIN');
+UserRole::getValues(UserRole::ADMIN);
+UserRole::getValues([UserRole::ADMIN]);
+UserRole::getValues('CUSTOMER');
+UserRole::getValues(UserRole::CUSTOMER);
+UserRole::getValues([UserRole::CUSTOMER]);
 ```
 
-### Get Specific Enum Names
+### Get specific enum names
 ```php
-TestEnum::getNames(10);
-TestEnum::getNames(50);
-TestEnum::getNames([10,50]);
+UserRole::getNames(10);
+UserRole::getNames(50);
+UserRole::getNames([10,50]);
 ```
 
-### Localized Enums
+### Use static calls to get the primitive value
+```php
+UserRole::ADMIN(); // 10
+UserRole::CUSTOMER(); // 50
+```
+
+### Localized enum
 
 The Enum has to implement the `LocalizedEnum` interface:
 

@@ -9,7 +9,7 @@
 
 [![mindtwo GmbH](https://github.com/mindtwo/native-enum/blob/master/assets/header.png?raw=true)](https://www.mindtwo.de/)
 
-Inspired by the package [BenSampo/laravel-enum](https://github.com/BenSampo/laravel-enum) this package is adapted to the new native enums in PHP 8.1.
+Inspired by the package [BenSampo/laravel-enum](https://github.com/BenSampo/laravel-enum) this one is using the new native enums in PHP 8.1.
 Based on these new enums the native functions are extended to work easily with them in Laravel based systems.
 
 Everyone is welcome to contribute.
@@ -28,8 +28,19 @@ PHP 8.1 or higher
 $ composer require mindtwo/native-enum
 ```
 
+## Enum Definition
+You can use the following Artisan command to generate a new native enum:
 
-## Enum creation
+```php
+// Default:
+php artisan make:enum UserRole
+
+// Localized:
+php artisan make:enum UserRole --localized
+```
+
+### Manual Enum Definition
+You can also create a new native enum manually. The structure should look like this:
 
 ```php
 namespace App\Enums;
@@ -45,7 +56,7 @@ enum UserRole: int
 
 ## Usage
 
-### Base usage
+### Base Usage
 ```php
 TestEnum::getRandomValue();
 TestEnum::getRandomName();
@@ -56,7 +67,7 @@ TestEnum::getValues();
 TestEnum::getNames();
 ```
 
-### Get specific enum values
+### Get Specific Enum Values
 ```php
 TestEnum::getValues('ADMIN');
 TestEnum::getValues(UserRole::ADMIN);
@@ -66,14 +77,14 @@ TestEnum::getValues(UserRole::CUSTOMER);
 TestEnum::getValues([UserRole::CUSTOMER]);
 ```
 
-### Get specific enum names
+### Get Specific Enum Names
 ```php
 TestEnum::getNames(10);
 TestEnum::getNames(50);
 TestEnum::getNames([10,50]);
 ```
 
-### Localized enums
+### Localized Enums
 
 The Enum has to implement the `LocalizedEnum` interface:
 

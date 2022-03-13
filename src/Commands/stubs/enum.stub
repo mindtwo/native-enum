@@ -1,0 +1,14 @@
+<?php
+
+namespace DummyNamespace;
+
+use mindtwo\NativeEnum\BaseEnum;
+
+enum DummyClass: int
+{
+    use BaseEnum;
+
+    case OptionOne = 1;
+    case OptionTwo = 2;
+    case OptionThree = 3;
+}

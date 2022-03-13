@@ -1,0 +1,15 @@
+<?php
+
+namespace DummyNamespace;
+
+use mindtwo\NativeEnum\BaseEnum;
+use mindtwo\NativeEnum\Contracts\LocalizedEnum;
+
+enum DummyClass: int implements LocalizedEnum
+{
+    use BaseEnum;
+
+    case OptionOne = 1;
+    case OptionTwo = 2;
+    case OptionThree = 3;
+}

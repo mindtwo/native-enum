@@ -157,6 +157,7 @@ If you discover any security related issues, please email info@mindtwo.de instea
 
 - [mindtwo GmbH][link-author]
 - [BenSampo/laravel-enum][link-laravel-enum]
+- [archtechx/enums][link-archtechx-enums]
 - [All Contributors][link-contributors]
 
 ## License
@@ -177,6 +178,7 @@ The MIT License (MIT). Please see [License File](LICENSE.md) for more informatio
 [link-downloads]: https://packagist.org/packages/mindtwo/native-enum
 [link-author]: https://github.com/mindtwo
 [link-laravel-enum]: https://github.com/BenSampo/laravel-enum
+[link-archtechx-enums]: https://github.com/archtechx/enums
 [link-contributors]: ../../contributors
 
 

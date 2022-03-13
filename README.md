@@ -14,19 +14,19 @@ Everyone is welcome to contribute.
 
 Enojy the Package!
 
-## Index
+## Overview
 - [Install](Install)
   - [Requirements](#requirements)
-  - [Composer install](#composerinstall)
-- [Create enum](#createenum)
-  - [Artisan command](#artisancommand)
-  - [Manual enum creation](#manualenumcreation)
+  - [Composer install](#composer-install)
+- [Create enum](#create-enum)
+  - [Artisan command](#artisan-command)
+  - [Manual enum creation](#manual-enum-creation)
 - [Usage](#usage)
-  - [Base usage](#baseusage)
-  - [Get specific enum values](#getspecificenum alues)
-  - [Get specific enum names](#getspecificenumnames) 
-  - [Use static calls to get the primitive value](#usestaticcallstogettheprimitivevalue) 
-  - [Localized enum](#localizedenum)
+  - [Base usage](#base-usage)
+  - [Get specific enum values](#get-specific-enum-values)
+  - [Get specific enum names](#get-specific-enum-names) 
+  - [Use static calls to get the primitive value](#use-static-calls-to-get-the-primitive-value) 
+  - [Localized enum](#localized-enum)
 
 ## Install
 

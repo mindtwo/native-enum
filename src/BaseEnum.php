@@ -5,10 +5,16 @@ namespace mindtwo\NativeEnum;
 use Illuminate\Support\Arr;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Lang;
+use Illuminate\Support\Traits\Macroable;
 use mindtwo\NativeEnum\Contracts\LocalizedEnum;
 
 trait BaseEnum
 {
+    use Macroable {
+        __callStatic as macroCallStatic;
+        __call as macroCall;
+    }
+
     /**
      * Get all or a custom set of the enum names.
      *
@@ -229,6 +235,10 @@ trait BaseEnum
     /** Return the enum's value when it's called ::STATICALLY(). */
     public static function __callStatic($name, $args)
     {
+        if (static::hasMacro($name)) {
+            return static::macroCallStatic($name, $args);
+        }
+
         $cases = static::cases();
 
         foreach ($cases as $case) {
@@ -238,5 +248,26 @@ trait BaseEnum
         }
 
         throw new Exceptions\UndefinedCaseError(static::class, $name);
+    }
+
+    /**
+     * Delegate magic method calls to macro's or the static call.
+     *
+     * While it is not typical to use the magic instantiation dynamically, it may happen
+     * incidentally when calling the instantiation in an instance method of itself.
+     * Even when using the `static::KEY()` syntax, PHP still interprets this is a call to
+     * an instance method when it happens inside of an instance method of the same class.
+     *
+     * @param  string  $name
+     * @param  mixed  $args
+     * @return mixed
+     */
+    public function __call($name, $args)
+    {
+        if (static::hasMacro($name)) {
+            return $this->macroCall($name, $args);
+        }
+
+        return self::__callStatic($name, $args);
     }
 }

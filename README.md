@@ -28,7 +28,6 @@ Enojy the Package!
   - [Use static calls to get the primitive value](#use-static-calls-to-get-the-primitive-value)
   - [Validation](#validation)
   - [Localized enum](#localized-enum)
-  - [Extending the native Enum Class](#extending-the-native-enum-class)
 
 ## Install
 
@@ -190,22 +189,6 @@ return [
 
 ];
 ```
-
-### Extending the native Enum Class
-
-The `BaseEnum` trait implements the [Laravel `Macroable`](https://laravel.com/api/9.x/Illuminate/Support/Traits/Macroable.html) trait, meaning it's easy to extend it with your own functions. If you have a function that you often add to each of your enums, you can use a macro.
-
-Let's say we want to be able to get a flipped version of the enum `asArray` method, we can do this using:
-
-```php
-Enum::macro('asFlippedArray', function() {
-    return array_flip(self::asArray());
-});
-```
-
-Now, on each of my enums, I can call it using `UserRole::asFlippedArray()`.
-
-It's best to register the macro inside a service providers' boot method.
 
 ## Change log
 

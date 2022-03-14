@@ -76,6 +76,35 @@ trait BaseEnum
     }
 
     /**
+     * Check that the enum contains a specific key.
+     *
+     * @param  string  $key
+     * @return bool
+     */
+    public static function hasName(string $key): bool
+    {
+        return in_array($key, static::getNames(), true);
+    }
+
+    /**
+     * Check that the enum contains a specific value.
+     *
+     * @param  mixed  $value
+     * @param  bool  $strict (Optional, defaults to True)
+     * @return bool
+     */
+    public static function hasValue($value, bool $strict = true): bool
+    {
+        $validValues = static::getValues();
+
+        if ($strict) {
+            return in_array($value, $validValues, true);
+        }
+
+        return in_array((string) $value, array_map('strval', $validValues), true);
+    }
+
+    /**
      * Check that the enum implements the LocalizedEnum interface.
      *
      * @return bool

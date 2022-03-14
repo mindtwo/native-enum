@@ -25,7 +25,8 @@ Enojy the Package!
   - [Base usage](#base-usage)
   - [Get specific enum values](#get-specific-enum-values)
   - [Get specific enum names](#get-specific-enum-names) 
-  - [Use static calls to get the primitive value](#use-static-calls-to-get-the-primitive-value) 
+  - [Use static calls to get the primitive value](#use-static-calls-to-get-the-primitive-value)
+  - [Validation](#validation)
   - [Localized enum](#localized-enum)
 
 ## Install
@@ -78,6 +79,8 @@ UserRole::asSelectArray();
 UserRole::asArray();
 UserRole::getValues();
 UserRole::getNames();
+UserRole::hasValue(50);
+UserRole::hasName('ADMIN');
 ```
 
 ### Get specific enum values
@@ -101,6 +104,59 @@ UserRole::getNames([10,50]);
 ```php
 UserRole::ADMIN(); // 10
 UserRole::CUSTOMER(); // 50
+```
+
+### Validation
+
+#### Enum value
+
+You may validate that an enum value passed to a controller is a valid value for a given enum by using the `EnumValue` rule.
+
+```php
+use mindtwo\NativeEnum\Rules\EnumValue;
+
+public function store(Request $request)
+{
+    $this->validate($request, [
+        'user_role' => ['required', new EnumValue(UserRole::class)],
+    ]);
+}
+```
+
+By default, type checking is set to strict, but you can bypass this by passing `false` to the optional second parameter of the EnumValue class.
+
+```php
+new EnumValue(UserRole::class, false) // Turn off strict type checking.
+```
+
+#### Enum name
+
+You can also validate on names using the `EnumName` rule. This is useful if you're taking the enum name as a URL parameter for sorting or filtering for example.
+
+```php
+use mindtwo\NativeEnum\Rules\EnumKey;
+
+public function store(Request $request)
+{
+    $this->validate($request, [
+        'user_role' => ['required', new EnumName(UserRole::class)],
+    ]);
+}
+```
+
+#### Enum instance
+
+Additionally you can validate that a parameter is an instance of a given enum.
+
+```php
+use mindtwo\NativeEnum\Rules\Enum;
+
+public function store(Request $request)
+{
+    $this->validate($request, [
+        'user_role' => ['required', new Enum(UserRole::class)],
+    ]);
+}
 ```
 
 ### Localized enum

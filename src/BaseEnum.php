@@ -116,7 +116,7 @@ trait BaseEnum
     }
 
     /**
-     * Get the localized description of a value.
+     * Get the localized name of a value.
      *
      * This works only if localization is enabled
      * for the enum and if the name exists in the lang file.
@@ -124,7 +124,7 @@ trait BaseEnum
      * @param  mixed  $value
      * @return string|null
      */
-    protected static function getLocalizedDescription($value): ?string
+    public static function getLocalizedName($value): ?string
     {
         if (static::isLocalizable()) {
             $localizedStringName = static::getLocalizationName() . '.' . $value;
@@ -217,7 +217,25 @@ trait BaseEnum
     public static function asSelectArray(): array
     {
         return static::asCollection()->map(function ($name) {
-            return static::getLocalizedDescription($name);
+            return static::getLocalizedName($name);
+        })->toArray();
+    }
+
+    /**
+     * Get the enum as an array formatted for a js servable array.
+     *
+     * [mixed $value => string description]
+     *
+     * @return array
+     */
+    public static function asServableEnum(): array
+    {
+        return static::asCollection()->map(function ($name, $value) {
+            return [
+                'name'           => $name,
+                'value'          => $value,
+                'localized_name' => static::getLocalizedName($name)
+            ];
         })->toArray();
     }
 

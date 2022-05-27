@@ -1,7 +1,8 @@
 @php
     $enums = [];
     foreach (config('enums.serve') as $enumCls) {
-        $enums[] = call_user_func([$enumCls, 'asServableEnum']);
+        $name = (new \ReflectionClass($enumCls))->getShortName();
+        $enums[$name] = call_user_func([$enumCls, 'asServableEnum']);
     }
 @endphp
 

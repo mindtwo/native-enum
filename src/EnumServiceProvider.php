@@ -38,6 +38,12 @@ class EnumServiceProvider extends ServiceProvider
                 MakeEnumCommand::class,
             ]);
         }
+
+        $this->publishes([
+            __DIR__.'/stubs/config/enums.php' => config_path('enums.php'),
+        ]);
+
+        $this->loadViewsFrom(__DIR__.'/stubs/components', 'm2-enums');
     }
 
     /**

@@ -7,8 +7,9 @@
 
 [![mindtwo GmbH](https://github.com/mindtwo/native-enum/blob/master/assets/header.png?raw=true)](https://www.mindtwo.de/)
 
-Inspired by the package [BenSampo/laravel-enum](https://github.com/BenSampo/laravel-enum) this one is using the new native enums in PHP 8.1.
-Based on these new enums the native functions are extended to work easily with them in Laravel based systems.
+Enums are an invaluable tool for any developer working with PHP. They provide a way to easily and efficiently define a set of constants that can be used throughout a project. Enums also help to make code more maintainable and scalable. For example, they can help to define a set of values that must stay consistent throughout the project, like a list of permissions or statuses. This helps ensure that the same values are used in all the relevant parts of the code and that any changes are made in one place. Additionally, enums help to reduce the amount of manual testing needed since the values are already defined. Furthermore, enums provide a way for developers to quickly check for valid values, making it easier to spot errors in code and ensure that the application behaves as expected. Finally, enums are strongly typed, meaning that they can help to ensure that the correct type of data is used in each part of the application, which can help to improve overall code quality.
+
+Inspired by the package [BenSampo/laravel-enum](https://github.com/BenSampo/laravel-enum) this one uses the new native enums classes in PHP. The native functions are extended to work easily ams seamlessly with them in Laravel-based systems.
 
 Everyone is welcome to contribute.
 
@@ -30,20 +31,28 @@ Enojy the Package!
   - [Localized enum](#localized-enum)
 
 ## Install
+## Installing the PHP Composer Package
+
+Laravel Native PHP 8.1 Enums is a powerful package that can help you construct and maintain robust and scalable Laravel-based systems. 
 
 ### Requirements
-Laravel 9 or higher
-PHP 8.1 or higher
+- Laravel 9 or higher
+- PHP 8.1 or higher
 
 ### Composer install
+Before you begin, you'll need to make sure you have the listed requirements and Composer installed on your system. You can find instructions for doing so [here](https://getcomposer.org/doc/00-intro.md). 
+
+Once you have Composer installed, you can install "Laravel Native PHP 8.1 Enums" by running the following command from your project directory:
 
 ``` bash
-$ composer require mindtwo/native-enum
+composer require mindtwo/native-enum
 ```
+
+After the installation is complete, you'll now be ready to start using native enums in your project. Have fun!
 
 ## Create enum
 ### Artisan command
-You can use the following Artisan command to generate a new native enum:
+You can use the following Artisan command to generate a new native enum class in your project:
 
 ```php
 // Default:

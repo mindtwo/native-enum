@@ -134,7 +134,17 @@ trait BaseEnum
             }
         }
 
-        return $value;
+        return $name;
+    }
+
+    /**
+     * Get the localized name of the enum.
+     *
+     * @return string|null
+     */
+    public function name(): string|null
+    {
+        return $this->getLocalizedName($this->name);
     }
 
     /**

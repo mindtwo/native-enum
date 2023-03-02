@@ -199,6 +199,12 @@ return [
 ];
 ```
 
+To get a translated name of a selected enum value:
+
+```php
+Enums\UserRole::ADMIN->name(); // Returns "Administrator"
+```
+
 ## Change log
 
 Please see [CHANGELOG](CHANGELOG.md) for more information on what has changed recently.

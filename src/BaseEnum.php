@@ -134,7 +134,7 @@ trait BaseEnum
             }
         }
 
-        return $name;
+        return $value;
     }
 
     /**

@@ -29,7 +29,9 @@
         "illuminate/translation": "^8.0|^9.0|^10.0"
     },
     "require-dev": {
-        "phpunit/phpunit": "^9.5.10",
+        "nunomaduro/collision": "^7.1",
+        "orchestra/testbench": "^8.5",
+        "phpunit/phpunit": "^10.1",
         "squizlabs/php_codesniffer": "^3.6.2"
     },
     "autoload": {

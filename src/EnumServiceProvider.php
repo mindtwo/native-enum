@@ -57,7 +57,7 @@ class EnumServiceProvider extends ServiceProvider
             $enum = $parameters[0] ?? null;
 
             return (new EnumName($enum))->passes($attribute, $value);
-        }, __('laravelEnum::messages.enum_name'));
+        }, __('native-enum::messages.enum_name'));
 
         $this->app['validator']->extend('enum_value', function ($attribute, $value, $parameters, $validator) {
             $enum = $parameters[0] ?? null;
@@ -71,13 +71,13 @@ class EnumServiceProvider extends ServiceProvider
             $strict = !! json_decode(strtolower($strict));
 
             return (new EnumValue($enum, $strict))->passes($attribute, $value);
-        }, __('laravelEnum::messages.enum_value'));
+        }, __('native-enum::messages.enum_value'));
 
         $this->app['validator']->extend('enum', function ($attribute, $value, $parameters, $validator) {
             $enum = $parameters[0] ?? null;
 
             return (new Enum($enum))->passes($attribute, $value);
-        }, __('laravelEnum::messages.enum'));
+        }, __('native-enum::messages.enum'));
     }
 
     private function bootValidationTranslation()

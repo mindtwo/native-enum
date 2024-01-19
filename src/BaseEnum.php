@@ -228,7 +228,7 @@ trait BaseEnum
     {
         return static::asCollection()->map(function ($name) {
             return static::getLocalizedName($name);
-        })->toArray();
+        })->sort()->toArray();
     }
 
     /**
@@ -246,7 +246,7 @@ trait BaseEnum
                 'value'          => $value,
                 'localized_name' => static::getLocalizedName($name)
             ];
-        })->toArray();
+        })->sort()->toArray();
     }
 
     /** Return the enum's value when it's $invoked(). */

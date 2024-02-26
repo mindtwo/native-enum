@@ -5,7 +5,7 @@
 [![Build Status][ico-travis]][link-travis]
 [![Total Downloads][ico-downloads]][link-downloads]
 
-[![mindtwo GmbH](https://github.com/mindtwo/native-enum/blob/master/assets/header.png?raw=true)](https://www.mindtwo.de/)
+[![mindtwo GmbH](https://github.com/mindtwo/native-enum/blob/master/assets/header.png?raw=true)][link-author]
 
 Enums are an invaluable tool for any developer working with PHP. They provide a way to easily and efficiently define a set of constants that can be used throughout a project. Enums also help to make code more maintainable and scalable. For example, they can help to define a set of values that must stay consistent throughout the project, like a list of permissions or statuses. This helps ensure that the same values are used in all the relevant parts of the code and that any changes are made in one place. Additionally, enums help to reduce the amount of manual testing needed since the values are already defined. Furthermore, enums provide a way for developers to quickly check for valid values, making it easier to spot errors in code and ensure that the application behaves as expected. Finally, enums are strongly typed, meaning that they can help to ensure that the correct type of data is used in each part of the application, which can help to improve overall code quality.
 
@@ -225,7 +225,7 @@ If you discover any security related issues, please email info@mindtwo.de instea
 
 ## Credits
 
-- [mindtwo GmbH][link-author]
+- [All Devs @ mindtwo][link-author]
 - [BenSampo/laravel-enum][link-laravel-enum]
 - [archtechx/enums][link-archtechx-enums]
 - [All Contributors][link-contributors]
@@ -246,7 +246,7 @@ The MIT License (MIT). Please see [License File](LICENSE.md) for more informatio
 [link-scrutinizer]: https://scrutinizer-ci.com/g/mindtwo/native-enum/code-structure
 [link-code-quality]: https://scrutinizer-ci.com/g/mindtwo/native-enum
 [link-downloads]: https://packagist.org/packages/mindtwo/native-enum
-[link-author]: https://github.com/mindtwo
+[link-author]: https://www.mindtwo.de/digitalagentur
 [link-laravel-enum]: https://github.com/BenSampo/laravel-enum
 [link-archtechx-enums]: https://github.com/archtechx/enums
 [link-contributors]: ../../contributors

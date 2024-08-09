@@ -205,6 +205,57 @@ To get a translated name of a selected enum value:
 Enums\UserRole::ADMIN->name(); // Returns "Administrator"
 ```
 
+### Casts in Eloquent Models
+
+Laravel's Eloquent ORM provides a powerful and expressive way to handle data in your database. When working with custom data types, like enums, it's often useful to define how these values should be cast when interacting with the database. This is where casting comes into play.
+
+#### Using EnumCast in Models
+
+If you want to use an enum in your Eloquent model, you can leverage the `EnumCast` feature to ensure that the enum values are correctly transformed when reading from or writing to the database. This is particularly useful when dealing with attributes that have a specific set of allowed values, such as user roles, statuses, or types.
+
+Here’s how you can apply `EnumCast` in your model:
+
+```php
+namespace App\Models;
+
+use App\Enums\UserRole;
+use Illuminate\Database\Eloquent\Model;
+
+class User extends Model
+{
+    protected $casts = [
+        'role' => UserRole::class,
+    ];
+}
+```
+
+In the example above, the `role` attribute of the `User` model is cast to the `UserRole` enum. This means that whenever you access the `role` attribute, Eloquent will automatically convert the raw database value into an instance of `UserRole`. Similarly, when you assign a `UserRole` enum instance to the `role` attribute, Eloquent will handle the conversion to its underlying value when saving it to the database.
+
+#### Handling Nullable Values
+
+In some cases, an attribute might be optional and could have a `null` value in the database. If you need to support `null` values for an enum cast, you can do so by appending `:nullable` to the cast definition:
+
+```php
+protected $casts = [
+    'role' => UserRole::class . ':nullable',
+];
+```
+
+With this setup, the `role` attribute can be `null`, and Eloquent will correctly handle it without throwing errors. This is useful for scenarios where an enum value may not be set initially or where it can be removed at a later time.
+
+#### Casting Collections of Enums
+
+Sometimes, you may have a model attribute that stores an array or collection of enum values. For instance, a user might have multiple roles, and these roles are stored as an array in the database. You can cast these arrays to collections of enum instances by using the `:collection` modifier:
+
+```php
+protected $casts = [
+    'roles' => UserRole::class . ':collection',
+];
+```
+
+With this configuration, the `roles` attribute will be cast to a collection of `UserRole` enum instances. When you retrieve this attribute, Eloquent will return a collection where each item is an instance of `UserRole`. Similarly, when you assign a collection or array of `UserRole` instances to the `roles` attribute, Eloquent will properly convert and store the underlying values in the database.
+
+
 ## Change log
 
 Please see [CHANGELOG](CHANGELOG.md) for more information on what has changed recently.

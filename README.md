@@ -235,11 +235,29 @@ In the example above, the `role` attribute of the `User` model is cast to the `U
 
 In some cases, an attribute might be optional and could have a `null` value in the database. If you need to support `null` values for an enum cast, you can do so by appending `:nullable` to the cast definition:
 
+1. Define the cast with the `:nullable` modifier:
 ```php
 protected $casts = [
     'role' => UserRole::class . ':nullable',
 ];
 ```
+2. Ensure that the enum class implements the `Illuminate\Contracts\Database\Eloquent\Castable` contract.
+
+```php
+namespace App\Enums;
+
+use Illuminate\Contracts\Database\Eloquent\Castable;
+
+enum UserRole: int implements Castable
+{
+    use BaseEnum;
+    
+    case ADMIN = 10;
+    case CUSTOMER = 50;
+}
+```
+
+IMPORTANT: The `Illuminate\Contracts\Database\Eloquent\Castable` contract is required to support nullable enum values in Eloquent models. Make sure that your enum class implements this contract to avoid errors when using the `:nullable` modifier.
 
 With this setup, the `role` attribute can be `null`, and Eloquent will correctly handle it without throwing errors. This is useful for scenarios where an enum value may not be set initially or where it can be removed at a later time.
 
@@ -247,11 +265,30 @@ With this setup, the `role` attribute can be `null`, and Eloquent will correctly
 
 Sometimes, you may have a model attribute that stores an array or collection of enum values. For instance, a user might have multiple roles, and these roles are stored as an array in the database. You can cast these arrays to collections of enum instances by using the `:collection` modifier:
 
+1. Define the cast with the `:collection` modifier:
 ```php
 protected $casts = [
     'roles' => UserRole::class . ':collection',
 ];
 ```
+
+2. Ensure that the enum class implements the `Illuminate\Contracts\Database\Eloquent\Castable` contract.
+
+```php
+namespace App\Enums;
+
+use Illuminate\Contracts\Database\Eloquent\Castable;
+
+enum UserRole: int implements Castable
+{
+    use BaseEnum;
+    
+    case ADMIN = 10;
+    case CUSTOMER = 50;
+}
+```
+
+IMPORTANT: The `Illuminate\Contracts\Database\Eloquent\Castable` contract is required to support casting collections of enum values in Eloquent models. Make sure that your enum class implements this contract to avoid errors when using the `:collection` modifier.
 
 With this configuration, the `roles` attribute will be cast to a collection of `UserRole` enum instances. When you retrieve this attribute, Eloquent will return a collection where each item is an instance of `UserRole`. Similarly, when you assign a collection or array of `UserRole` instances to the `roles` attribute, Eloquent will properly convert and store the underlying values in the database.
 

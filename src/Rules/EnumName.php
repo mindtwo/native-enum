@@ -20,7 +20,6 @@ class EnumName implements Rule
     /**
      * Create a new rule instance.
      *
-     * @param  string  $enum
      * @return void
      *
      * @throws InvalidArgumentException

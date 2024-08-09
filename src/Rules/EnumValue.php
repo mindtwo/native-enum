@@ -25,8 +25,6 @@ class EnumValue implements Rule
     /**
      * Create a new rule instance.
      *
-     * @param  string  $enumClass
-     * @param  bool  $strict
      * @return void
      *
      * @throws InvalidArgumentException

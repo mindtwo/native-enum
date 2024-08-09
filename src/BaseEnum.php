@@ -2,10 +2,12 @@
 
 namespace mindtwo\NativeEnum;
 
+use Illuminate\Contracts\Database\Eloquent\CastsAttributes;
 use Illuminate\Support\Arr;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Lang;
-use Illuminate\Support\Traits\Macroable;
+use mindtwo\NativeEnum\Casts\EnumCast;
+use mindtwo\NativeEnum\Casts\EnumCollectionCast;
 use mindtwo\NativeEnum\Contracts\LocalizedEnum;
 
 trait BaseEnum
@@ -14,8 +16,6 @@ trait BaseEnum
      * Get all or a custom set of the enum names.
      *
      * @param  mixed  $values
-     *
-     * @return array
      */
     public static function getNames($values = null): array
     {
@@ -34,8 +34,6 @@ trait BaseEnum
      * Get all or a custom set of the enum values.
      *
      * @param  string|string[]|null  $names
-     *
-     * @return array
      */
     public static function getValues($names = null): array
     {
@@ -54,7 +52,6 @@ trait BaseEnum
      * Get the name for a single enum value.
      *
      * @param  mixed  $value
-     * @return string
      */
     public static function getName($value): string
     {
@@ -66,7 +63,6 @@ trait BaseEnum
     /**
      * Get the value for a single enum name.
      *
-     * @param  self|string  $name
      * @return mixed
      */
     public static function getValue(self|string $name)
@@ -78,9 +74,6 @@ trait BaseEnum
 
     /**
      * Check that the enum contains a specific key.
-     *
-     * @param  string  $key
-     * @return bool
      */
     public static function hasName(string $key): bool
     {
@@ -91,8 +84,7 @@ trait BaseEnum
      * Check that the enum contains a specific value.
      *
      * @param  mixed  $value
-     * @param  bool  $strict (Optional, defaults to True)
-     * @return bool
+     * @param  bool  $strict  (Optional, defaults to True)
      */
     public static function hasValue($value, bool $strict = true): bool
     {
@@ -107,8 +99,6 @@ trait BaseEnum
 
     /**
      * Check that the enum implements the LocalizedEnum interface.
-     *
-     * @return bool
      */
     protected static function isLocalizable(): bool
     {
@@ -122,12 +112,11 @@ trait BaseEnum
      * for the enum and if the name exists in the lang file.
      *
      * @param  mixed  $value
-     * @return string|null
      */
     public static function getLocalizedName($value): ?string
     {
         if (static::isLocalizable()) {
-            $localizedStringName = static::getLocalizationName() . '.' . $value;
+            $localizedStringName = static::getLocalizationName().'.'.$value;
 
             if (Lang::has($localizedStringName)) {
                 return __($localizedStringName);
@@ -139,28 +128,22 @@ trait BaseEnum
 
     /**
      * Get the localized name of the enum.
-     *
-     * @return string|null
      */
-    public function name(): string|null
+    public function name(): ?string
     {
         return $this->getLocalizedName($this->name);
     }
 
     /**
      * Get the default localization name.
-     *
-     * @return string
      */
     public static function getLocalizationName(): string
     {
-        return 'enums.' . static::class;
+        return 'enums.'.static::class;
     }
 
     /**
      * Get a random name from the enum.
-     *
-     * @return string
      */
     public static function getRandomName(): string
     {
@@ -183,8 +166,6 @@ trait BaseEnum
 
     /**
      * Get a random instance of the enum.
-     *
-     * @return static
      */
     public static function getRandomInstance(): static
     {
@@ -195,8 +176,6 @@ trait BaseEnum
      * Return the enum as an array.
      *
      * [string $key => mixed $value]
-     *
-     * @return Collection
      */
     public static function asCollection(): Collection
     {
@@ -209,8 +188,6 @@ trait BaseEnum
      * Return the enum as an array.
      *
      * [string $key => mixed $value]
-     *
-     * @return array
      */
     public static function asArray(): array
     {
@@ -221,8 +198,6 @@ trait BaseEnum
      * Get the enum as an array formatted for a select array.
      *
      * [mixed $value => string description]
-     *
-     * @return array
      */
     public static function asSelectArray(): array
     {
@@ -235,18 +210,51 @@ trait BaseEnum
      * Get the enum as an array formatted for a js servable array.
      *
      * [mixed $value => string description]
-     *
-     * @return array
      */
     public static function asServableEnum(): array
     {
         return static::asCollection()->map(function ($name, $value) {
             return [
-                'name'           => $name,
-                'value'          => $value,
-                'localized_name' => static::getLocalizedName($name)
+                'name' => $name,
+                'value' => $value,
+                'localized_name' => static::getLocalizedName($name),
             ];
         })->sort()->toArray();
+    }
+
+    /**
+     * Allow casting the enum to a collection and nullable enums.
+     */
+    public static function castUsing(array $arguments): CastsAttributes
+    {
+        if (in_array('collection', $arguments)) {
+            return new EnumCollectionCast(static::class, ...$arguments);
+        }
+
+        return new EnumCast(static::class, ...$arguments);
+    }
+
+    /**
+     * Livewire friendly method to create an enum instance.
+     */
+    public static function fromLivewire($enum): self
+    {
+        if (is_a($enum, self::class)) {
+            return $enum;
+        }
+
+        return self::from($enum->value);
+    }
+
+    /**
+     * Livewire friendly method to create an enum instance.
+     */
+    public function toLivewire(): array
+    {
+        return [
+            'value' => $this->value,
+            'label' => $this->name,
+        ];
     }
 
     /** Return the enum's value when it's $invoked(). */

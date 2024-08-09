@@ -30,7 +30,7 @@ class EnumServiceProvider extends ServiceProvider
     private function bootCommands()
     {
         $this->publishes([
-            __DIR__.'/Commands/stubs' => $this->app->basePath('stubs')
+            __DIR__.'/Commands/stubs' => $this->app->basePath('stubs'),
         ], 'stubs');
 
         if ($this->app->runningInConsole()) {
@@ -68,7 +68,7 @@ class EnumServiceProvider extends ServiceProvider
                 return (new EnumValue($enum))->passes($attribute, $value);
             }
 
-            $strict = !! json_decode(strtolower($strict));
+            $strict = (bool) json_decode(strtolower($strict));
 
             return (new EnumValue($enum, $strict))->passes($attribute, $value);
         }, __('native-enum::messages.enum_value'));
@@ -83,9 +83,9 @@ class EnumServiceProvider extends ServiceProvider
     private function bootValidationTranslation()
     {
         $this->publishes([
-            __DIR__ . '/../lang' => lang_path('vendor/native-enum'),
+            __DIR__.'/../lang' => lang_path('vendor/native-enum'),
         ], 'translations');
 
-        $this->loadTranslationsFrom(__DIR__ . '/../lang/', 'native-enum');
+        $this->loadTranslationsFrom(__DIR__.'/../lang/', 'native-enum');
     }
 }

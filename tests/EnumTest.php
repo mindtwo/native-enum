@@ -66,6 +66,6 @@ class EnumTest extends TestCase
         $this->assertSame($values, TestEnum::getNames());
         $this->assertEquals([TestEnum::EXAMPLE_1->name], TestEnum::getNames(1));
         $this->assertEquals([TestEnum::EXAMPLE_2->name], TestEnum::getNames(2));
-        $this->assertSame($values, TestEnum::getNames([1,2]));
+        $this->assertSame($values, TestEnum::getNames([1, 2]));
     }
 }

@@ -41,24 +41,19 @@ abstract class Cast implements CastsAttributes
      *
      * @see BaseEnum::make()
      */
-    protected function asEnum($value): Enum
+    protected function asEnum($value): BaseEnum
     {
-        if ($value instanceof Enum) {
+        if ($value instanceof BaseEnum) {
             return $value;
         }
 
-        return forward_static_call(
-            [$this->enumClass, 'make'],
-            $value
-        );
+        return $this->enumClass::getInstance($value);
     }
 
     /**
-     * @return null
-     *
      * @throws NotNullableEnumField
      */
-    protected function handleNullValue(Model $model, string $key)
+    protected function handleNullValue(Model $model, string $key): null
     {
         if ($this->isNullable) {
             return null;

@@ -61,6 +61,18 @@ trait BaseEnum
     }
 
     /**
+     * Get the instance for a single enum value.
+     *
+     * @param  mixed  $value
+     */
+    public static function getInstance($value): self
+    {
+        return collect(static::cases())->sole(function ($case) use ($value) {
+            return $value === $case->value;
+        });
+    }
+
+    /**
      * Get the value for a single enum name.
      *
      * @return mixed

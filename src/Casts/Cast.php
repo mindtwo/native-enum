@@ -41,7 +41,7 @@ abstract class Cast implements CastsAttributes
      *
      * @see BaseEnum::make()
      */
-    protected function asEnum($value): BaseEnum
+    protected function asEnum($value)
     {
         if (is_object($value) && in_array(BaseEnum::class, class_uses($value), true)) {
             return $value;

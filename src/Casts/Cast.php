@@ -4,7 +4,6 @@ namespace mindtwo\NativeEnum\Casts;
 
 use BadMethodCallException;
 use Illuminate\Contracts\Database\Eloquent\CastsAttributes;
-use Illuminate\Database\Eloquent\Model;
 use mindtwo\NativeEnum\BaseEnum;
 use mindtwo\NativeEnum\Exceptions\NotNullableEnumField;
 use TypeError;
@@ -43,7 +42,7 @@ abstract class Cast implements CastsAttributes
      */
     protected function asEnum($value)
     {
-        if (is_object($value) && in_array(BaseEnum::class, class_uses($value), true)) {
+        if ($value instanceof $this->enumClass) {
             return $value;
         }
 
@@ -51,9 +50,13 @@ abstract class Cast implements CastsAttributes
     }
 
     /**
+     * @param  object  $model  Any object — typically an Eloquent Model, but
+     *                         accepted untyped so the cast can be unit-tested
+     *                         without `illuminate/database` installed.
+     *
      * @throws NotNullableEnumField
      */
-    protected function handleNullValue(Model $model, string $key): null
+    protected function handleNullValue(object $model, string $key): null
     {
         if ($this->isNullable) {
             return null;

@@ -6,6 +6,7 @@ use Illuminate\Contracts\Database\Eloquent\CastsAttributes;
 use Illuminate\Support\Arr;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Lang;
+use InvalidArgumentException;
 use mindtwo\NativeEnum\Casts\EnumCast;
 use mindtwo\NativeEnum\Casts\EnumCollectionCast;
 use mindtwo\NativeEnum\Contracts\LocalizedEnum;
@@ -73,15 +74,20 @@ trait BaseEnum
     }
 
     /**
-     * Get the value for a single enum name.
+     * Get the value for a single enum name or case.
+     *
+     * Accepts either a case instance (returns its primitive value) or a case
+     * name string (looks up the matching case and returns its value).
      *
      * @return mixed
+     *
+     * @throws \Illuminate\Support\ItemNotFoundException if no case matches
      */
     public static function getValue(self|string $name)
     {
-        return collect(static::cases())->sole(function ($case) use ($name) {
-            return (optional($name)->name ?? $name) === $case->name;
-        })->value;
+        $caseName = $name instanceof self ? $name->name : $name;
+
+        return collect(static::cases())->sole(fn ($case) => $case->name === $caseName)->value;
     }
 
     /**
@@ -95,6 +101,10 @@ trait BaseEnum
     /**
      * Check that the enum contains a specific value.
      *
+     * Non-strict mode compares the string forms of ints and strings only.
+     * Any other type is never a value: casting it would raise an error for
+     * arrays and let `true` or `1.0` pass as the value `1`.
+     *
      * @param  mixed  $value
      * @param  bool  $strict  (Optional, defaults to True)
      */
@@ -106,13 +116,17 @@ trait BaseEnum
             return in_array($value, $validValues, true);
         }
 
+        if (! is_int($value) && ! is_string($value)) {
+            return false;
+        }
+
         return in_array((string) $value, array_map('strval', $validValues), true);
     }
 
     /**
      * Check that the enum implements the LocalizedEnum interface.
      */
-    protected static function isLocalizable(): bool
+    public static function isLocalizable(): bool
     {
         return isset(class_implements(static::class)[LocalizedEnum::class]);
     }
@@ -123,16 +137,29 @@ trait BaseEnum
      * This works only if localization is enabled
      * for the enum and if the name exists in the lang file.
      *
+     * If the translator is not bound (e.g. during unit tests that boot no
+     * Laravel application), the raw value is returned instead of throwing a
+     * facade-root exception. A translator swapped directly onto the facade
+     * remains usable without an application container.
+     *
      * @param  mixed  $value
      */
     public static function getLocalizedName($value): ?string
     {
-        if (static::isLocalizable()) {
-            $localizedStringName = static::getLocalizationName().'.'.$value;
+        if (! static::isLocalizable()) {
+            return $value;
+        }
 
-            if (Lang::has($localizedStringName)) {
-                return __($localizedStringName);
-            }
+        $app = Lang::getFacadeApplication();
+
+        if ($app === null ? Lang::getFacadeRoot() === null : ! $app->bound('translator')) {
+            return $value;
+        }
+
+        $localizedStringName = static::getLocalizationName().'.'.$value;
+
+        if (Lang::has($localizedStringName)) {
+            return Lang::get($localizedStringName);
         }
 
         return $value;
@@ -228,7 +255,7 @@ trait BaseEnum
         return static::asCollection()->map(function ($name, $value) {
             return [
                 'name' => $name,
-                'value' => $value,
+                'value' => static::getValue($name),
                 'localized_name' => static::getLocalizedName($name),
             ];
         })->sort()->toArray();
@@ -248,14 +275,33 @@ trait BaseEnum
 
     /**
      * Livewire friendly method to create an enum instance.
+     *
+     * Accepts a case, the array produced by `toLivewire()` (which is what
+     * Livewire passes back), or an object with a `value` property.
+     *
+     * @throws InvalidArgumentException
      */
     public static function fromLivewire($enum): self
     {
-        if (is_a($enum, self::class)) {
+        if ($enum instanceof self) {
             return $enum;
         }
 
-        return self::from($enum->value);
+        $value = match (true) {
+            is_array($enum) => $enum['value'] ?? null,
+            is_object($enum) => $enum->value ?? null,
+            default => null,
+        };
+
+        if (! is_int($value) && ! is_string($value)) {
+            $enumClass = static::class;
+
+            throw new InvalidArgumentException(
+                "Cannot create a {$enumClass} case from a Livewire payload without an int or string value."
+            );
+        }
+
+        return self::from($value);
     }
 
     /**
@@ -267,12 +313,6 @@ trait BaseEnum
             'value' => $this->value,
             'label' => $this->name,
         ];
-    }
-
-    /** Return the enum's value when it's $invoked(). */
-    public function __invoke()
-    {
-        return $this->value;
     }
 
     /** Return the enum's value when it's called ::STATICALLY(). */

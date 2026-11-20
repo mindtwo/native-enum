@@ -42,7 +42,7 @@ class EnumName implements Rule
      */
     public function passes($attribute, $value)
     {
-        return $this->enumClass::hasName($value);
+        return is_string($value) && $this->enumClass::hasName($value);
     }
 
     /**

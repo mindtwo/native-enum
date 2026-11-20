@@ -42,8 +42,13 @@ abstract class Cast implements CastsAttributes
      */
     protected function asEnum($value)
     {
-        if (is_object($value) && in_array(BaseEnum::class, class_uses($value), true)) {
+        if ($value instanceof $this->enumClass) {
             return $value;
+        }
+
+        // A case of another enum is only accepted if its value is valid for this enum.
+        if (is_object($value) && in_array(BaseEnum::class, class_uses($value), true)) {
+            $value = $value->value;
         }
 
         return $this->enumClass::getInstance($value);

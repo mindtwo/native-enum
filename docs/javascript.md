@@ -42,7 +42,9 @@ window.m2_ServedEnums = {
 ```
 
 - Each enum is stored under its short class name. Two enums with the same short name in different namespaces overwrite each other.
-- The cases are keyed by value. An enum whose values are consecutive ints starting at `0` is output as a plain array instead.
+- The cases use their values as PHP array keys. PHP converts canonical numeric-string keys such as `'0'` and `'10'` to integers.
+- JSON becomes a plain array only when the final sorted keys are exactly `0, 1, 2, ...`; this can happen for int-backed or numeric-string-backed enums.
+- Each entry's nested `value` keeps the exact backing type declared by the enum, even when PHP coerces its outer key.
 - `localized_name` is the translated label of a [localized enum](localization.md), and the case name otherwise.
 
 `Object.values()` works for both shapes:
@@ -56,7 +58,7 @@ roles.map((role) => ({ value: role.value, label: role.localized_name }));
 ## Things to keep in mind
 
 - **Everything listed is public.** Case names, values and labels are visible to anyone who can load the page. Don't list enums whose cases are internal.
-- **Form controls return strings.** A `<select>` gives you `'10'`, not `10`. Convert with `Number()` before sending it, or validate with a [non-strict `EnumValue` rule](validation.md#strict-and-non-strict).
+- **Form controls return strings.** For int-backed enums, convert `'10'` with `Number()` before sending it, or validate with a [non-strict `EnumValue` rule](validation.md#strict-and-non-strict). Keep the string unchanged for string-backed enums, including numeric strings.
 
 ## Your own endpoint
 

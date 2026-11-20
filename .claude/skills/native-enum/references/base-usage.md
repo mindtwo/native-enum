@@ -35,6 +35,10 @@ UserRole::asCollection();
 
 The `value => name` shape is the most common: easy to drop into a `<select>` once you map the names through `getLocalizedName()`.
 
+PHP converts canonical numeric-string array keys such as `'0'` and `'10'` to integers. These helpers
+therefore cannot preserve numeric strings as outer keys; the nested `value` in `asServableEnum()`
+does preserve the enum's exact backing type.
+
 ### `asSelectArray(): array`
 
 ```php
@@ -54,7 +58,10 @@ UserRole::asServableEnum();
 // ]
 ```
 
-Keyed by case value and sorted by case name. Because of the keys it JSON-encodes as an **object** (`{"10": {…}, "50": {…}}`), not an array — unless the values are consecutive ints starting at `0`. This is what the `<x-m2-enums::serve />` component emits per enum; iterate it in JS with `Object.values()`.
+Keyed by case value and sorted by case name. It JSON-encodes as an object unless the final PHP keys
+are exactly `0, 1, 2, ...`, in which case it becomes an array. Numeric-string backing values can
+also produce integer outer keys, but each entry's nested `value` retains its exact string type. This
+is what the `<x-m2-enums::serve />` component emits per enum; iterate it in JS with `Object.values()`.
 
 ## Single-value lookups
 

@@ -88,6 +88,8 @@ These come from real bugs in this package and adjacent PHP gotchas. Violating th
 
 7. **Comma storage format doesn't index.** `:collection,comma` is fine for "set of roles" where you never query by membership. For columns you `WHERE roles LIKE '%10%'` against, use JSON storage and PostgreSQL `jsonb` / MySQL JSON functions.
 
+   Comma storage is unescaped. String-backed values must not be empty, contain a comma, or have surrounding whitespace; use the default JSON format for those values.
+
 8. **Modifier order on casts doesn't matter, but list `:collection` first.** `'roles' => Status::class.':collection,comma,nullable'` and `'roles' => Status::class.':nullable,comma,collection'` behave identically.
 
 9. **Lookups and casts compare with `===` — there is no type coercion.** `UserRole::getInstance('10')` throws `ItemNotFoundException` for an int-backed enum, and so does `$model->role = '10'` on a cast attribute. Request input is always a string, so convert it first: `UserRole::from((int) $request->input('role'))`. A passing non-strict `EnumValue` rule does not change the value's type.
@@ -96,7 +98,7 @@ These come from real bugs in this package and adjacent PHP gotchas. Violating th
 
 11. **Collection casts take plain arrays, not `Collection` objects.** `$model->roles = collect([10, 50])` throws `ItemNotFoundException`; call `->all()` first. Reading the attribute also returns a plain array of cases.
 
-12. **`window.m2_ServedEnums.<Enum>` is an object keyed by case value, not an array.** `.map()` / `.find()` directly on it fail. Wrap it: `Object.values(window.m2_ServedEnums.UserRole)`.
+12. **`window.m2_ServedEnums.<Enum>` can be an object or an array.** PHP array-key coercion and JSON decide the shape. Always wrap it before iterating: `Object.values(window.m2_ServedEnums.UserRole)`.
 
 13. **Enums don't need `Livewire\Wireable`.** Livewire 3 hydrates backed enums natively; the trait's `toLivewire()` / `fromLivewire()` are plain helpers and play no part in that. Don't add the interface just to make a typed enum property work.
 
@@ -279,7 +281,7 @@ console.log(window.m2_ServedEnums);
 //   OrderStatus: { ... }
 // }
 
-Object.values(window.m2_ServedEnums.UserRole); // iterate — each enum is an object keyed by value
+Object.values(window.m2_ServedEnums.UserRole); // iterate safely across object and array shapes
 ```
 
 For framework examples and a custom endpoint approach (when `<x-m2-enums::serve />` doesn't fit), see [js-serving.md](references/js-serving.md).

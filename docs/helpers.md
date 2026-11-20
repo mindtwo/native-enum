@@ -16,6 +16,11 @@ enum UserRole: int
 
 String-backed enums work the same way; their values are strings instead of ints.
 
+PHP converts canonical numeric-string array keys such as `'0'` and `'10'` to integers. The keys
+returned by `asArray()`, `asCollection()`, `asSelectArray()` and `asServableEnum()` therefore follow
+PHP's array-key rules. The nested `value` field in `asServableEnum()` still preserves the enum's
+actual backing type.
+
 ## Lists
 
 | Call | Returns |
@@ -39,6 +44,10 @@ String-backed enums work the same way; their values are strings instead of ints.
 ```
 
 It is the structure the [JavaScript component](javascript.md) outputs.
+
+Numeric-string backing values can make the outer keys integers and can make JSON encode the result
+as an array. Always read entries through `Object.values()` in JavaScript; each entry's nested
+`value` remains the exact int or string declared by the enum.
 
 ## Lookups
 

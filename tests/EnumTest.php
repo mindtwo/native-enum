@@ -3,7 +3,11 @@
 namespace mindtwo\NativeEnum\Tests;
 
 use Illuminate\Support\Collection;
+use Illuminate\Support\Facades\Lang;
+use Illuminate\Translation\ArrayLoader;
+use Illuminate\Translation\Translator;
 use mindtwo\NativeEnum\Tests\Enums\LocalizedTestEnum;
+use mindtwo\NativeEnum\Tests\Enums\NumericStringTestEnum;
 use mindtwo\NativeEnum\Tests\Enums\TestEnum;
 use PHPUnit\Framework\TestCase;
 
@@ -162,12 +166,32 @@ class EnumTest extends TestCase
         ], $served[1]);
     }
 
-    public function testAsSelectArrayIsSorted()
+    public function testNumericStringValuesUsePhpArrayKeySemantics()
     {
-        $select = TestEnum::asSelectArray();
+        $this->assertSame([
+            1 => 'Beta',
+            0 => 'Alpha',
+        ], NumericStringTestEnum::asArray());
+    }
 
-        // sort() in BaseEnum sorts by value (the array keys), ascending
-        $this->assertSame([1 => 'EXAMPLE_1', 2 => 'EXAMPLE_2'], $select);
+    public function testAsServableEnumPreservesNumericStringValueTypes()
+    {
+        $served = NumericStringTestEnum::asServableEnum();
+
+        $this->assertSame('0', $served[0]['value']);
+        $this->assertSame('1', $served[1]['value']);
+        $this->assertSame(
+            '[{"name":"Alpha","value":"0","localized_name":"Alpha"},'.
+            '{"name":"Beta","value":"1","localized_name":"Beta"}]',
+            json_encode($served)
+        );
+    }
+
+    public function testAsSelectArrayIsSortedByLabel()
+    {
+        $select = NumericStringTestEnum::asSelectArray();
+
+        $this->assertSame([0 => 'Alpha', 1 => 'Beta'], $select);
     }
 
     public function testGetLocalizationNameBuildsDottedKey()
@@ -185,6 +209,36 @@ class EnumTest extends TestCase
     {
         $this->assertSame('EXAMPLE_1', LocalizedTestEnum::getLocalizedName('EXAMPLE_1'));
         $this->assertSame('EXAMPLE_1', LocalizedTestEnum::EXAMPLE_1->name());
+    }
+
+    public function testGetLocalizedNameUsesSwappedTranslatorWithoutApplication()
+    {
+        $application = Lang::getFacadeApplication();
+        $translator = $application === null || $application->bound('translator')
+            ? Lang::getFacadeRoot()
+            : null;
+        $loader = new ArrayLoader();
+        $loader->addMessages('en', 'enums', [
+            LocalizedTestEnum::class => [
+                'EXAMPLE_1' => 'Translated label',
+            ],
+        ]);
+
+        Lang::setFacadeApplication(null);
+        Lang::clearResolvedInstance('translator');
+        Lang::swap(new Translator($loader, 'en'));
+
+        try {
+            $this->assertSame('Translated label', LocalizedTestEnum::getLocalizedName('EXAMPLE_1'));
+            $this->assertSame('EXAMPLE_2', LocalizedTestEnum::getLocalizedName('EXAMPLE_2'));
+        } finally {
+            Lang::clearResolvedInstance('translator');
+            Lang::setFacadeApplication($application);
+
+            if ($translator !== null) {
+                Lang::swap($translator);
+            }
+        }
     }
 
     public function testIsLocalizableReflectsInterface()

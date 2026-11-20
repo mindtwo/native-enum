@@ -130,11 +130,8 @@ trait BaseEnum
      *
      * If the translator is not bound (e.g. during unit tests that boot no
      * Laravel application), the raw value is returned instead of throwing a
-     * facade-root exception. We use `Lang::getFacadeApplication()` because
-     * it's part of `illuminate/support` (always available here) and returns
-     * `null` when no facade root has been set — unlike `app()`, which is
-     * provided by `illuminate/foundation` and not always loaded for library
-     * packages.
+     * facade-root exception. A translator swapped directly onto the facade
+     * remains usable without an application container.
      *
      * @param  mixed  $value
      */
@@ -146,14 +143,14 @@ trait BaseEnum
 
         $app = Lang::getFacadeApplication();
 
-        if ($app === null || ! $app->bound('translator')) {
+        if ($app === null ? Lang::getFacadeRoot() === null : ! $app->bound('translator')) {
             return $value;
         }
 
         $localizedStringName = static::getLocalizationName().'.'.$value;
 
         if (Lang::has($localizedStringName)) {
-            return __($localizedStringName);
+            return Lang::get($localizedStringName);
         }
 
         return $value;
@@ -249,7 +246,7 @@ trait BaseEnum
         return static::asCollection()->map(function ($name, $value) {
             return [
                 'name' => $name,
-                'value' => $value,
+                'value' => static::getValue($name),
                 'localized_name' => static::getLocalizedName($name),
             ];
         })->sort()->toArray();

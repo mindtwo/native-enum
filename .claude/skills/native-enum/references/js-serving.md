@@ -42,7 +42,8 @@ The package ships a Blade component (`<x-m2-enums::serve />`) that emits a `wind
 
 ## What gets emitted
 
-The component iterates `config('enums.serve')` and calls `asServableEnum()` on each. Every enum is an **object keyed by case value**, not an array:
+The component iterates `config('enums.serve')` and calls `asServableEnum()` on each. Each enum uses
+case values as PHP array keys and usually becomes a JavaScript object:
 
 ```js
 window.m2_ServedEnums = {
@@ -57,7 +58,10 @@ window.m2_ServedEnums = {
 };
 ```
 
-Exception: an enum whose values are consecutive ints starting at `0` is emitted as a plain array. `Object.values()` handles both shapes, so always go through it when iterating.
+PHP converts canonical numeric-string array keys to integers. If the final sorted keys are exactly
+`0, 1, 2, ...`, JSON emits a plain array; otherwise it emits an object. `Object.values()` handles
+both shapes, so always go through it when iterating. The nested `value` field keeps the enum's exact
+backing type even when PHP coerces the outer key.
 
 Each entry has:
 
@@ -150,7 +154,7 @@ The component takes no props and always serves everything listed under `serve`. 
 
 ## Gotchas
 
-- **The served enum is an object, not an array.** `.map()` / `.find()` / `.length` directly on `m2_ServedEnums.UserRole` fail. Use `Object.values()`.
+- **The served enum can be an object or an array.** The shape depends on its final PHP array keys. Use `Object.values()` before `.map()` or `.find()`.
 - **`window.m2_ServedEnums` is rendered server-side.** Whatever locale is active when the page is served is the locale you'll get. SPA route changes that don't re-render the layout will keep the original locale until full reload.
 - **Everything served is public.** Case names, values and labels are visible to anyone who can load the page. If an enum is internal, don't list it — use a custom endpoint with auth.
 - **Namespacing:** the component uses the enum's short class name as the JS object key. Two enums with the same short name in different namespaces will collide (`App\Enums\Status` and `App\Domain\Billing\Status` both become `Status`). Use unique short names or the custom-endpoint approach.

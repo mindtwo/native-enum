@@ -109,13 +109,18 @@ UserRole::ADMIN->name();     // 'Administrator' (from the fallback locale)
 
 There is no need to duplicate entries across locales to get a fallback.
 
-### Translations without `__()`
+### Translations without global helpers
 
-The `__()` helper is called only inside the `Lang::has(...)` branch, so non-localized enums (those not implementing the interface) never hit the translator at all. Useful for `getLocalizedName()`-on-non-localized returning the raw name.
+The trait uses `Lang::has()` and `Lang::get()` directly. It does not require Laravel's global `__()`
+or `app()` helpers, so the package keeps working when only its declared Illuminate components are
+installed.
 
 ### Outside a Laravel app
 
-If `Lang::getFacadeApplication()` returns `null` (e.g. CLI scripts, unit tests without an app), `getLocalizedName()` short-circuits to the raw value rather than throwing. The translation lookup is a Laravel convenience, not a hard requirement.
+Without an application or a resolved translator, `getLocalizedName()` short-circuits to the raw
+value rather than throwing. A translator installed with `Lang::swap()` works without an application
+container, which is useful in component-level tests. The translation lookup remains a convenience,
+not a hard requirement.
 
 ## Shorter translation keys
 

@@ -7,6 +7,26 @@ Updates should follow the [Keep a CHANGELOG](http://keepachangelog.com/) princip
 ## NEXT - YYYY-MM-DD
 
 ### Added
+- Nothing
+
+### Changed
+- Nothing
+
+### Deprecated
+- Nothing
+
+### Fixed
+- Nothing
+
+### Removed
+- Nothing
+
+### Security
+- Nothing
+
+## 2.0 - 2026-11-20
+
+### Added
 - **Public API:** Expose `BaseEnum::isLocalizable()` as a public capability check.
 - **Documentation:** Add topic guides and a bundled coding-agent skill covering package usage.
 - **CI:** Add GitHub Actions checks for tests and code style.

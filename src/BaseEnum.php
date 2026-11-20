@@ -123,16 +123,32 @@ trait BaseEnum
      * This works only if localization is enabled
      * for the enum and if the name exists in the lang file.
      *
+     * If the translator is not bound (e.g. during unit tests that boot no
+     * Laravel application), the raw value is returned instead of throwing a
+     * facade-root exception. We use `Lang::getFacadeApplication()` because
+     * it's part of `illuminate/support` (always available here) and returns
+     * `null` when no facade root has been set — unlike `app()`, which is
+     * provided by `illuminate/foundation` and not always loaded for library
+     * packages.
+     *
      * @param  mixed  $value
      */
     public static function getLocalizedName($value): ?string
     {
-        if (static::isLocalizable()) {
-            $localizedStringName = static::getLocalizationName().'.'.$value;
+        if (! static::isLocalizable()) {
+            return $value;
+        }
 
-            if (Lang::has($localizedStringName)) {
-                return __($localizedStringName);
-            }
+        $app = Lang::getFacadeApplication();
+
+        if ($app === null || ! $app->bound('translator')) {
+            return $value;
+        }
+
+        $localizedStringName = static::getLocalizationName().'.'.$value;
+
+        if (Lang::has($localizedStringName)) {
+            return __($localizedStringName);
         }
 
         return $value;

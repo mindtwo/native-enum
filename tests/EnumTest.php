@@ -3,6 +3,7 @@
 namespace mindtwo\NativeEnum\Tests;
 
 use Illuminate\Support\Collection;
+use mindtwo\NativeEnum\Tests\Enums\LocalizedTestEnum;
 use mindtwo\NativeEnum\Tests\Enums\TestEnum;
 use PHPUnit\Framework\TestCase;
 
@@ -153,5 +154,17 @@ class EnumTest extends TestCase
     public function testGetLocalizationNameBuildsDottedKey()
     {
         $this->assertSame('enums.'.TestEnum::class, TestEnum::getLocalizationName());
+    }
+
+    /**
+     * The localized enum must report itself as localizable. Without an
+     * active translator (e.g. in unit tests), `getLocalizedName()` should
+     * fall back to the raw value rather than throwing a facade-root
+     * exception.
+     */
+    public function testGetLocalizedNameFallsBackWhenTranslatorIsMissing()
+    {
+        $this->assertSame('EXAMPLE_1', LocalizedTestEnum::getLocalizedName('EXAMPLE_1'));
+        $this->assertSame('EXAMPLE_1', LocalizedTestEnum::EXAMPLE_1->name());
     }
 }

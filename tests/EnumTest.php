@@ -167,4 +167,9 @@ class EnumTest extends TestCase
         $this->assertSame('EXAMPLE_1', LocalizedTestEnum::getLocalizedName('EXAMPLE_1'));
         $this->assertSame('EXAMPLE_1', LocalizedTestEnum::EXAMPLE_1->name());
     }
+
+    public function testIsLocalizableReflectsInterface()
+    {
+        $this->assertTrue(LocalizedTestEnum::isLocalizable());
+    }
 }

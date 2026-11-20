@@ -112,7 +112,7 @@ trait BaseEnum
     /**
      * Check that the enum implements the LocalizedEnum interface.
      */
-    protected static function isLocalizable(): bool
+    public static function isLocalizable(): bool
     {
         return isset(class_implements(static::class)[LocalizedEnum::class]);
     }

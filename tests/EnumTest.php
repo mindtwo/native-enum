@@ -68,4 +68,90 @@ class EnumTest extends TestCase
         $this->assertEquals([TestEnum::EXAMPLE_2->name], TestEnum::getNames(2));
         $this->assertSame($values, TestEnum::getNames([1, 2]));
     }
+
+    public function testHasValueAndHasName()
+    {
+        $this->assertTrue(TestEnum::hasValue(1));
+        $this->assertFalse(TestEnum::hasValue(999));
+        $this->assertFalse(TestEnum::hasValue('1')); // strict by default
+        $this->assertTrue(TestEnum::hasValue('1', false)); // non-strict coerces
+
+        $this->assertTrue(TestEnum::hasName('EXAMPLE_1'));
+        $this->assertFalse(TestEnum::hasName('NOT_A_CASE'));
+    }
+
+    public function testGetNameReturnsNameForValue()
+    {
+        $this->assertSame('EXAMPLE_1', TestEnum::getName(1));
+        $this->assertSame('EXAMPLE_2', TestEnum::getName(2));
+    }
+
+    public function testGetInstanceReturnsCaseForValue()
+    {
+        $this->assertSame(TestEnum::EXAMPLE_1, TestEnum::getInstance(1));
+        $this->assertSame(TestEnum::EXAMPLE_2, TestEnum::getInstance(2));
+    }
+
+    public function testInvokeReturnsPrimitiveValue()
+    {
+        $this->assertSame(1, (TestEnum::EXAMPLE_1)());
+        $this->assertSame(2, (TestEnum::EXAMPLE_2)());
+    }
+
+    public function testCallStaticReturnsPrimitiveValueForCaseName()
+    {
+        $this->assertSame(1, TestEnum::EXAMPLE_1());
+        $this->assertSame(2, TestEnum::EXAMPLE_2());
+    }
+
+    public function testCallStaticThrowsForUnknownCase()
+    {
+        $this->expectException(\mindtwo\NativeEnum\Exceptions\UndefinedCaseError::class);
+
+        TestEnum::DOES_NOT_EXIST();
+    }
+
+    public function testToLivewireReturnsValueAndName()
+    {
+        $wire = TestEnum::EXAMPLE_1->toLivewire();
+
+        $this->assertSame(['value' => 1, 'label' => 'EXAMPLE_1'], $wire);
+    }
+
+    public function testFromLivewireReturnsCaseForEnumInstance()
+    {
+        $this->assertSame(TestEnum::EXAMPLE_1, TestEnum::fromLivewire(TestEnum::EXAMPLE_1));
+    }
+
+    public function testFromLivewireReturnsCaseForArrayLikeObject()
+    {
+        $obj = (object) ['value' => 2];
+
+        $this->assertSame(TestEnum::EXAMPLE_2, TestEnum::fromLivewire($obj));
+    }
+
+    public function testAsServableEnumExposesNameValueAndLocalizedName()
+    {
+        $served = TestEnum::asServableEnum();
+
+        $this->assertArrayHasKey(1, $served);
+        $this->assertSame([
+            'name' => 'EXAMPLE_1',
+            'value' => 1,
+            'localized_name' => 'EXAMPLE_1', // no translation file loaded in tests
+        ], $served[1]);
+    }
+
+    public function testAsSelectArrayIsSorted()
+    {
+        $select = TestEnum::asSelectArray();
+
+        // sort() in BaseEnum sorts by value (the array keys), ascending
+        $this->assertSame([1 => 'EXAMPLE_1', 2 => 'EXAMPLE_2'], $select);
+    }
+
+    public function testGetLocalizationNameBuildsDottedKey()
+    {
+        $this->assertSame('enums.'.TestEnum::class, TestEnum::getLocalizationName());
+    }
 }

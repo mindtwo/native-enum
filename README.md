@@ -194,7 +194,7 @@ More: [Localization](docs/localization.md) covers fallbacks and custom translati
 | [Creating enums](docs/creating-enums.md) | `make:enum`, namespaces, custom stubs, writing an enum by hand |
 | [Helper methods](docs/helpers.md) | Every method `BaseEnum` adds, with return values |
 | [Validation](docs/validation.md) | `EnumValue`, `EnumName`, `Enum`, string syntax, error messages |
-| [Eloquent casts](docs/casts.md) | Single values, `:nullable`, `:collection`, `:comma` |
+| [Eloquent casts](docs/casts.md) | Single values, `:nullable`, `:collection`, `:collection,comma` |
 | [Localization](docs/localization.md) | `LocalizedEnum`, lang files, translated labels |
 | [Livewire](docs/livewire.md) | Enum properties on components |
 | [Serving enums to JavaScript](docs/javascript.md) | `<x-m2-enums::serve />` and `window.m2_ServedEnums` |

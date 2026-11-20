@@ -80,13 +80,13 @@ class EnumCastTest extends TestCase
         $cast->get($this->makeModel(), 'role', 999, []);
     }
 
-    public function testSetAcceptsCaseOfAnotherEnumWhenItsValueIsValid(): void
+    public function testSetThrowsForCaseOfAnotherEnumEvenWhenItsValueIsValid(): void
     {
         $cast = new EnumCast(TestEnum::class);
 
-        $result = $cast->set($this->makeModel(), 'role', OtherTestEnum::SharedWithTestEnum, []);
+        $this->expectException(ItemNotFoundException::class);
 
-        $this->assertSame(1, $result);
+        $cast->set($this->makeModel(), 'role', OtherTestEnum::SharedWithTestEnum, []);
     }
 
     public function testSetThrowsForCaseOfAnotherEnumWhenItsValueIsUnknown(): void

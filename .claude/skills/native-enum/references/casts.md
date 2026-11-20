@@ -61,10 +61,14 @@ protected $casts = [
 | ------------------ | --------------------------------------- |
 | `NULL`             | throws `NotNullableEnumField` (unless `:nullable`) |
 | `'[10,50]'` (JSON) | `[UserRole::ADMIN, UserRole::CUSTOMER]` |
+| `''`               | `[]`                                    |
+| invalid JSON, JSON `null`, JSON scalar | throws `UnexpectedValueException` |
 
 The attribute is a **plain PHP array** of cases, not a `Collection`. The default storage format is JSON (`[10,50]`).
 
-### `:comma` storage format
+A column that doesn't hold a JSON array is rejected on purpose: reading damaged data as `[]` would let the next save overwrite it.
+
+### `:collection,comma` storage format
 
 ```php
 protected $casts = [
@@ -72,7 +76,7 @@ protected $casts = [
 ];
 ```
 
-For `VARCHAR`/`TEXT` columns. The package serializes to `"10,50"` and reads back, trimming whitespace and converting the parts to ints for int-backed enums. An empty string reads as `[]`. Parts that aren't valid ints (`1abc`, `abc`) are not coerced and throw `ItemNotFoundException`. A lone `0` reads as the zero case if the enum has one, and as `[]` otherwise. **Caveats**:
+For `VARCHAR`/`TEXT` columns. `comma` only works together with `collection`; on its own it is ignored and the cast is a single-value cast. The package serializes to `"10,50"` and reads back, trimming whitespace and converting the parts to ints for int-backed enums. An empty string reads as `[]`. Parts that aren't valid ints (`1abc`, `abc`) are not coerced and throw `ItemNotFoundException`. A lone `0` reads as the zero case if the enum has one, and as `[]` otherwise. **Caveats**:
 
 - Comma storage is intentionally unescaped. String-backed values must not be empty, contain a comma, or have leading or trailing whitespace. Writing one of these values throws `InvalidArgumentException`; use the default JSON format instead.
 - Not searchable without `LIKE` matching. For real querying, use JSON.
@@ -96,7 +100,7 @@ $user = User::find(1);
 $user->role = UserRole::CUSTOMER;  // assigns case → stores 50
 $user->role = 50;                  // raw value of the exact backing type → stores 50
 $user->role = '50';                // throws ItemNotFoundException (string !== int)
-$user->role = OtherEnum::Foo;      // only accepted if Foo's value is a UserRole value; throws otherwise
+$user->role = OtherEnum::Foo;      // throws ItemNotFoundException, even if Foo's value matches a UserRole case
 $user->save();
 
 $user->role;                       // UserRole::CUSTOMER
@@ -116,6 +120,7 @@ $user->roles = [10, 50];                               // raw values → stores 
 $user->roles = UserRole::ADMIN;                        // single case is wrapped → stores [10]
 $user->roles = collect([10, 50]);                      // throws ItemNotFoundException
 $user->roles = collect([10, 50])->all();               // works
+$user->roles = array_filter($user->roles, $callback);  // keys are dropped → stores a JSON list
 ```
 
 `set()` uses `Arr::wrap()`, which passes arrays through and wraps everything else — including a `Collection` — into a one-element array. Always assign a plain array.
@@ -144,6 +149,7 @@ Add `->nullable()` only together with the `:nullable` modifier. If the enum uses
 | `Cannot instantiate enum App\Enums\UserRole`               | `:nullable` / `:collection` used, enum lacks `Castable`      | Add `implements Castable` to the enum                      |
 | `NotNullableEnumField: Field X on model Y is not nullable` | Column is `NULL` (or `null` assigned) without `:nullable`    | Add `:nullable`                                            |
 | `ItemNotFoundException` on read                            | Column holds a value that is not a case, or the wrong type   | Fix the data, or match the column type to the backing type |
-| `ItemNotFoundException` on write                           | Assigned a string for an int-backed enum, or a `Collection`  | Convert first (`(int)`, `UserRole::from()`, `->all()`)     |
+| `ItemNotFoundException` on write                           | Assigned a string for an int-backed enum, a `Collection`, or a case of another enum | Convert first (`(int)`, `UserRole::from()`, `->all()`)     |
+| `UnexpectedValueException` on read                         | A `:collection` column holds something other than a JSON array | Repair the row; it is not read as an empty list            |
 | `ItemNotFoundException` after changing a case's value      | Existing rows still hold the old value                       | Migrate the column to the new value                        |
 | `Object of class MyEnum could not be converted to string`  | Using `implode` on cases directly                            | Project to `->value` first                                 |

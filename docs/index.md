@@ -12,7 +12,7 @@ New here? Start with [Get started](get-started.md). The [README](https://github.
 | [Creating enums](creating-enums.md) | `make:enum`, namespaces, custom stubs, writing an enum by hand |
 | [Helper methods](helpers.md) | Every method `BaseEnum` adds, with return values |
 | [Validation](validation.md) | `EnumValue`, `EnumName`, `Enum`, string syntax, error messages |
-| [Eloquent casts](casts.md) | Single values, `:nullable`, `:collection`, `:comma` |
+| [Eloquent casts](casts.md) | Single values, `:nullable`, `:collection`, `:collection,comma` |
 | [Localization](localization.md) | `LocalizedEnum`, lang files, translated labels |
 | [Livewire](livewire.md) | Enum properties on components |
 | [Serving enums to JavaScript](javascript.md) | `<x-m2-enums::serve />` and `window.m2_ServedEnums` |

@@ -6,10 +6,12 @@ use Illuminate\Support\ItemNotFoundException;
 use InvalidArgumentException;
 use mindtwo\NativeEnum\Casts\EnumCollectionCast;
 use mindtwo\NativeEnum\Exceptions\NotNullableEnumField;
+use mindtwo\NativeEnum\Tests\Enums\OtherTestEnum;
 use mindtwo\NativeEnum\Tests\Enums\StringTestEnum;
 use mindtwo\NativeEnum\Tests\Enums\TestEnum;
 use mindtwo\NativeEnum\Tests\Enums\ZeroBasedTestEnum;
 use PHPUnit\Framework\TestCase;
+use UnexpectedValueException;
 
 class EnumCollectionCastTest extends TestCase
 {
@@ -33,6 +35,63 @@ class EnumCollectionCastTest extends TestCase
 
         $getValue = $cast->get($this->model(), 'roles', $setValue, []);
         $this->assertEquals([TestEnum::EXAMPLE_1], $getValue);
+    }
+
+    public function testJsonFormatStoresListForArrayWithGapsInItsKeys(): void
+    {
+        $cast = new EnumCollectionCast(TestEnum::class);
+        $withoutFirstCase = array_filter(
+            [TestEnum::EXAMPLE_1, TestEnum::EXAMPLE_2],
+            fn (TestEnum $case) => $case !== TestEnum::EXAMPLE_1
+        );
+
+        $this->assertSame('[2]', $cast->set($this->model(), 'roles', $withoutFirstCase, []));
+    }
+
+    public function testJsonFormatReadsStoredObjectAsList(): void
+    {
+        $cast = new EnumCollectionCast(TestEnum::class);
+
+        $this->assertSame([TestEnum::EXAMPLE_2], $cast->get($this->model(), 'roles', '{"1":2}', []));
+    }
+
+    public function testJsonFormatReadsEmptyStringAsEmptyList(): void
+    {
+        $cast = new EnumCollectionCast(TestEnum::class);
+
+        $this->assertSame([], $cast->get($this->model(), 'roles', '', []));
+    }
+
+    /**
+     * @dataProvider columnValuesThatAreNotJsonArrays
+     */
+    public function testJsonFormatThrowsForColumnValueThatIsNotJsonArray(string $columnValue): void
+    {
+        $cast = new EnumCollectionCast(TestEnum::class);
+
+        $this->expectException(UnexpectedValueException::class);
+
+        $cast->get($this->model(), 'roles', $columnValue, []);
+    }
+
+    public static function columnValuesThatAreNotJsonArrays(): array
+    {
+        return [
+            'truncated' => ['[1,2'],
+            'plain text' => ['not json'],
+            'null literal' => ['null'],
+            'number' => ['1'],
+            'string' => ['"1"'],
+        ];
+    }
+
+    public function testSetThrowsForCaseOfAnotherEnumEvenWhenItsValueIsValid(): void
+    {
+        $cast = new EnumCollectionCast(TestEnum::class);
+
+        $this->expectException(ItemNotFoundException::class);
+
+        $cast->set($this->model(), 'roles', [OtherTestEnum::SharedWithTestEnum], []);
     }
 
     /**

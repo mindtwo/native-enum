@@ -6,9 +6,11 @@ use BadMethodCallException;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Arr;
 use InvalidArgumentException;
+use JsonException;
 use mindtwo\NativeEnum\BaseEnum;
 use mindtwo\NativeEnum\Exceptions\NotNullableEnumField;
 use TypeError;
+use UnexpectedValueException;
 
 class EnumCollectionCast extends Cast
 {
@@ -59,6 +61,10 @@ class EnumCollectionCast extends Cast
     }
 
     /**
+     * The keys are dropped, so that an array with gaps (the result of
+     * `array_filter()`, for example) is stored as a JSON list and not as a
+     * JSON object.
+     *
      * @param  int[]|string[]|BaseEnum[]  $values
      * @return BaseEnum[]
      *
@@ -67,7 +73,7 @@ class EnumCollectionCast extends Cast
      */
     protected function asEnums(array $values): array
     {
-        return array_map([$this, 'asEnum'], $values);
+        return array_map([$this, 'asEnum'], array_values($values));
     }
 
     /**
@@ -116,11 +122,13 @@ class EnumCollectionCast extends Cast
      * as strings.
      *
      * @return array<int, int|string>
+     *
+     * @throws UnexpectedValueException
      */
     protected function fromDatabase(string $value): array
     {
         if ($this->format !== self::FORMAT_COMMA) {
-            return Arr::wrap(json_decode($value, true));
+            return $this->decodeJsonArray($value);
         }
 
         if ($this->isEmptyCommaValue($value)) {
@@ -134,6 +142,39 @@ class EnumCollectionCast extends Cast
         }
 
         return array_map($this->toIntIfValid(...), $values);
+    }
+
+    /**
+     * Anything but a JSON array is rejected. Reading a damaged column as an
+     * empty list would let the next save overwrite what is left of the data.
+     * An empty string holds nothing that could be lost and stays readable.
+     *
+     * @return array<int|string, mixed>
+     *
+     * @throws UnexpectedValueException
+     */
+    private function decodeJsonArray(string $value): array
+    {
+        if ($value === '') {
+            return [];
+        }
+
+        try {
+            $values = json_decode($value, true, flags: JSON_THROW_ON_ERROR);
+        } catch (JsonException $exception) {
+            throw new UnexpectedValueException(
+                "Cannot read {$this->enumClass} cases from a column value that is not valid JSON.",
+                previous: $exception
+            );
+        }
+
+        if (! is_array($values)) {
+            throw new UnexpectedValueException(
+                "Cannot read {$this->enumClass} cases from a column value that is not a JSON array."
+            );
+        }
+
+        return $values;
     }
 
     /**

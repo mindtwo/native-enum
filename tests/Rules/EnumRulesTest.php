@@ -40,6 +40,19 @@ class EnumRulesTest extends TestCase
         $this->assertTrue($rule->passes('field', '1'));
     }
 
+    public function testEnumValueFailsForArrayInput(): void
+    {
+        $this->assertFalse((new EnumValue(TestEnum::class, true))->passes('field', [1]));
+        $this->assertFalse((new EnumValue(TestEnum::class, false))->passes('field', [1]));
+    }
+
+    public function testEnumValueLenientFailsForBooleanInput(): void
+    {
+        $rule = new EnumValue(TestEnum::class, false);
+
+        $this->assertFalse($rule->passes('field', true));
+    }
+
     // ----- EnumName -----
 
     public function testEnumNamePassesForValidName(): void
@@ -54,6 +67,25 @@ class EnumRulesTest extends TestCase
         $rule = new EnumName(TestEnum::class);
 
         $this->assertFalse($rule->passes('field', 'NOPE'));
+    }
+
+    /**
+     * @dataProvider inputsThatAreNotStrings
+     */
+    public function testEnumNameFailsForInputThatIsNotString(mixed $value): void
+    {
+        $rule = new EnumName(TestEnum::class);
+
+        $this->assertFalse($rule->passes('field', $value));
+    }
+
+    public static function inputsThatAreNotStrings(): array
+    {
+        return [
+            'array' => [['EXAMPLE_1']],
+            'int' => [1],
+            'null' => [null],
+        ];
     }
 
     // ----- Enum (instance) -----

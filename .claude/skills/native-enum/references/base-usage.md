@@ -101,7 +101,7 @@ UserRole::hasName('ADMIN');             // true
 UserRole::hasName('admin');             // false (case-sensitive)
 ```
 
-Strict mode uses PHP's `in_array(..., $strict=true)`. Non-strict projects both sides through `strval()` — fine for ints, marginal for strings.
+Strict mode uses PHP's `in_array(..., $strict=true)`. Non-strict mode compares the string forms of ints and strings. Any other type (`true`, `10.0`, `null`, arrays, objects) returns `false`.
 
 ## Random selection
 
@@ -113,15 +113,7 @@ UserRole::getRandomInstance();          // UserRole case
 
 All three use `array_rand()`. **Not cryptographically secure** — don't use them to generate tokens, password reset codes, or IDs. For secure randomness, use `random_int()`.
 
-## Case invocation
-
-### `$case()` — `__invoke`
-
-```php
-(UserRole::ADMIN)();                    // 10
-```
-
-PHP's `__invoke` lets you call a case like a function. The trait's `__invoke` returns `$case->value`. Useful in array_map / pipeline contexts where you want the primitive without typing `->value` everywhere.
+## Value shortcut
 
 ### `static::CASENAME()` — `__callStatic`
 
@@ -134,6 +126,8 @@ UserRole::DOES_NOT_EXIST();             // throws UndefinedCaseError
 `BaseEnum` defines `__callStatic()` that looks up cases by name and returns the value. Calling a non-existent case throws `mindtwo\NativeEnum\Exceptions\UndefinedCaseError` with PHP's native wording ("Undefined constant Foo::Bar") so existing log scrapers don't need updating.
 
 ⚠️ **The `() ` after a case name does NOT return the case** — it returns the primitive value. If you want the case instance, use `UserRole::ADMIN` (no parens).
+
+Cases themselves are **not callable**. `$case()` was removed, because Laravel's collection methods treat a callable argument as a callback and `collect($roles)->contains(UserRole::ADMIN)` returned a wrong result. Use `$case->value`.
 
 ## Localization helpers
 
@@ -151,7 +145,7 @@ See [localized.md](localized.md) for the full picture. The methods:
 | Method                              | Purpose                                              |
 | ----------------------------------- | ---------------------------------------------------- |
 | `castUsing(array $args)`            | Returns `EnumCast` or `EnumCollectionCast` instance  |
-| `static::fromLivewire($value)`      | Accepts a case, the `toLivewire()` array, or an object with `value` |
+| `static::fromLivewire($value)`      | Accepts a case, the `toLivewire()` array, or an object with `value`; throws `InvalidArgumentException` otherwise |
 | `$case->toLivewire()`               | Returns `['value' => …, 'label' => …]`               |
 
 `castUsing()` is only called by Laravel when the enum implements `Castable` — see [casts.md](casts.md).

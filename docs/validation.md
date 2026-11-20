@@ -39,13 +39,9 @@ With the string syntax, the second parameter is `true` or `false`:
 'role' => ['required', 'enum_value:'.UserRole::class.',false'], // non-strict
 ```
 
-### Reject arrays first
+### Input of another type
 
-Put `bail` and a type rule in front of a non-strict `EnumValue`, so that array input such as `role[]=10` fails validation cleanly instead of raising an error:
-
-```php
-'role' => ['bail', 'required', 'integer', new EnumValue(UserRole::class, false)],
-```
+Non-strict mode compares ints and strings only. Any other input fails validation. That covers an array such as `role[]=10`, and it covers `true` and `10.0` in a JSON body, whose string forms would be `'1'` and `'10'`.
 
 ## `EnumName`
 
@@ -55,11 +51,11 @@ Useful when the case name travels in a URL, for example as a sort or filter para
 use mindtwo\NativeEnum\Rules\EnumName;
 
 $request->validate([
-    'sort' => ['bail', 'required', 'string', new EnumName(UserRole::class)],
+    'sort' => ['required', new EnumName(UserRole::class)],
 ]);
 ```
 
-The name has to match exactly, including case. `bail` and `string` keep array input away from the rule, as above.
+The name has to match exactly, including case. Input that is not a string, such as an array, fails validation.
 
 ## `Enum`
 

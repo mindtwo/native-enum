@@ -34,6 +34,7 @@ new EnumValue(UserRole::class, false);
 ```php
 UserRole::hasValue('10', false); // true   ← string forms compared
 UserRole::hasValue('10');        // false  ← strict
+UserRole::hasValue(true, false); // false  ← only ints and strings are compared
 ```
 
 ### String-rule form
@@ -53,12 +54,12 @@ use mindtwo\NativeEnum\Rules\EnumName;
 public function index(Request $request)
 {
     $this->validate($request, [
-        'sort' => ['bail', 'required', 'string', new EnumName(UserRole::class)],
+        'sort' => ['required', new EnumName(UserRole::class)],
     ]);
 }
 ```
 
-`passes()` calls `UserRole::hasName($value)`. The match is exact and case-sensitive. Use this for URL parameters like `/users?sort=ADMIN`.
+`passes()` returns `false` for input that is not a string and otherwise calls `UserRole::hasName($value)`. The match is exact and case-sensitive. Use this for URL parameters like `/users?sort=ADMIN`.
 
 ## `Enum` — validate a case instance
 
@@ -101,14 +102,14 @@ If you maintain your own `validation.php`, prefer setting `enum`, `enum_name`, a
 
 ## Combining with other rules
 
-Laravel runs **all** rules of a field unless `bail` is present, so a type rule in front of the enum rule does not short-circuit on its own. Add `bail` plus a type rule to keep non-scalar input away from the enum rules:
+The enum rules never raise an error for input of the wrong type. Array input such as `role[]=10` fails validation: `EnumName` only accepts strings, and non-strict `EnumValue` only compares ints and strings, so `true` and `10.0` fail as well.
+
+A type rule in front is optional. It gives the user a more specific message. Add `bail`, because Laravel otherwise runs **all** rules of a field and reports the enum rule's message too:
 
 ```php
 'role' => ['bail', 'required', 'integer', new EnumValue(UserRole::class, false)],
 'sort' => ['bail', 'required', 'string', new EnumName(UserRole::class)],
 ```
-
-Without this, array input such as `role[]=10` raises an error inside a non-strict `EnumValue` (array-to-string conversion) or inside `EnumName` (`hasName()` is typed `string`) instead of producing a validation failure.
 
 Laravel's `integer` rule accepts numeric strings like `'10'`, so it works together with non-strict `EnumValue` for form input.
 

@@ -1,6 +1,6 @@
 ---
 name: native-enum
-description: Use the mindtwo/native-enum Laravel package to bridge PHP native enums with Laravel — generate enums with `make:enum`, validate request data via `EnumValue`/`EnumName`/`Enum` rules, cast Eloquent attributes to enums (single, nullable, or `:collection` with `:comma` storage), localize case names through `lang/enums.php`, expose enums to JavaScript through `<x-m2-enums::serve />`, and use enums as Livewire component properties. Activate when the user mentions "native-enum", `mindtwo/native-enum`, `BaseEnum`, `EnumValue`/`EnumName`/`Enum` rules, `EnumCast`/`EnumCollectionCast`, `LocalizedEnum`, or any task that involves PHP native enums in a Laravel project.
+description: Use the mindtwo/native-enum Laravel package to bridge PHP native enums with Laravel — generate enums with `make:enum`, validate request data via `EnumValue`/`EnumName`/`Enum` rules, cast Eloquent attributes to enums (single, nullable, or `:collection`, optionally with `comma` storage), localize case names through `lang/enums.php`, expose enums to JavaScript through `<x-m2-enums::serve />`, and use enums as Livewire component properties. Activate when the user mentions "native-enum", `mindtwo/native-enum`, `BaseEnum`, `EnumValue`/`EnumName`/`Enum` rules, `EnumCast`/`EnumCollectionCast`, `LocalizedEnum`, or any task that involves PHP native enums in a Laravel project.
 license: MIT
 metadata:
   package: mindtwo/native-enum
@@ -74,11 +74,11 @@ For deeper coverage of each capability, see the linked reference. Don't load the
 
 These come from real bugs in this package and adjacent PHP gotchas. Violating them produces silent data corruption or runtime errors.
 
-1. **Never `implode` an array of enum cases.** PHP enums (int- AND string-backed) do not implement `__toString()`. `implode(',', [Status::Open])` throws `Object of class Status could not be converted to string`. Always project to `->value` first: `implode(',', array_map(fn($c) => $c->value, $cases))`. The package's own `EnumCollectionCast` had this bug in the `:comma` format; it's fixed in tests `testCommaFormatRoundtripForIntBackedEnum` / `testCommaFormatCoercesStringValuesToIntForIntBackedEnum`.
+1. **Never `implode` an array of enum cases.** PHP enums (int- AND string-backed) do not implement `__toString()`. `implode(',', [Status::Open])` throws `Object of class Status could not be converted to string`. Always project to `->value` first: `implode(',', array_map(fn($c) => $c->value, $cases))`. The package's own `EnumCollectionCast` had this bug in the `:collection,comma` format; it's fixed in tests `testCommaFormatRoundtripForIntBackedEnum` / `testCommaFormatCoercesStringValuesToIntForIntBackedEnum`.
 
 2. **Never rely on `UserRole::ADMIN()` to return the enum case** — it returns the *value* (e.g. `int(10)`) because `BaseEnum` defines `__callStatic`. If you actually want the case instance, use `UserRole::ADMIN` (no parens). Calling a non-existent case (`UserRole::DOES_NOT_EXIST()`) throws `mindtwo\NativeEnum\Exceptions\UndefinedCaseError`, not the enum case itself.
 
-3. **`hasValue()` is strict by default.** `UserRole::hasValue('10')` is `false` because PHP's `===` rejects `string '10' === int 10`. Pass `false` as the second argument to allow loose coercion. This matters most for query-string input where everything is a string.
+3. **`hasValue()` is strict by default.** `UserRole::hasValue('10')` is `false` because PHP's `===` rejects `string '10' === int 10`. Pass `false` as the second argument to compare string forms instead. This matters most for query-string input where everything is a string. Non-strict mode compares ints and strings only: `true`, `10.0`, `null` and arrays never match.
 
 4. **`getValue()` accepts both a case name and a case instance.** `getValue('ADMIN')` and `getValue(UserRole::ADMIN)` both return `10`. A name that matches no case throws `Illuminate\Support\ItemNotFoundException` (from `Collection::sole()`), so guard user input with `hasName()` or the `EnumName` rule first.
 
@@ -92,7 +92,7 @@ These come from real bugs in this package and adjacent PHP gotchas. Violating th
 
 8. **Modifier order on casts doesn't matter, but list `:collection` first.** `'roles' => Status::class.':collection,comma,nullable'` and `'roles' => Status::class.':nullable,comma,collection'` behave identically.
 
-9. **Lookups and casts compare with `===` — there is no type coercion.** `UserRole::getInstance('10')` throws `ItemNotFoundException` for an int-backed enum, and so does `$model->role = '10'` on a cast attribute. Request input is always a string, so convert it first: `UserRole::from((int) $request->input('role'))`. A passing non-strict `EnumValue` rule does not change the value's type.
+9. **Lookups and casts compare with `===` — there is no type coercion.** `UserRole::getInstance('10')` throws `ItemNotFoundException` for an int-backed enum, and so does `$model->role = '10'` on a cast attribute. Request input is always a string, so convert it first: `UserRole::from((int) $request->input('role'))`. A passing non-strict `EnumValue` rule does not change the value's type. A case of a different enum is rejected as well, even if its value matches.
 
 10. **The Eloquent casts only run if the enum `implements Castable`.** Without the interface, `'role' => UserRole::class` is handled by Laravel's built-in enum cast, and `:nullable` / `:collection` fail with `Cannot instantiate enum`. The trait supplies `castUsing()`; the enum only has to declare the interface.
 
@@ -101,6 +101,10 @@ These come from real bugs in this package and adjacent PHP gotchas. Violating th
 12. **`window.m2_ServedEnums.<Enum>` can be an object or an array.** PHP array-key coercion and JSON decide the shape. Always wrap it before iterating: `Object.values(window.m2_ServedEnums.UserRole)`.
 
 13. **Enums don't need `Livewire\Wireable`.** Livewire 3 hydrates backed enums natively; the trait's `toLivewire()` / `fromLivewire()` are plain helpers and play no part in that. Don't add the interface just to make a typed enum property work.
+
+14. **Cases are not callable.** `$case()` no longer exists; read the value with `$case->value`. It was removed because Laravel's collection methods treat a callable argument as a callback, so `collect($roles)->contains(UserRole::ADMIN)` returned a wrong result. The static shortcut `UserRole::ADMIN()` still returns the value.
+
+15. **`comma` needs `collection`.** `UserRole::class.':comma'` is a single-value cast; the modifier is ignored without `collection`. Always write `:collection,comma`.
 
 ## Generate an enum
 
@@ -153,8 +157,7 @@ The command resolves stubs from `stubs/enum.stub` first, then falls back to the 
 | `getLocalizedName($name)`               | `string\|null`                | Falls back to `$name` if not translated  |
 | `case->name()`                          | `string\|null`                | Same as `getLocalizedName($case->name)`  |
 | `case->toLivewire()`                    | `['value' => …, 'label' => …]`| Helper only; Livewire does not need it   |
-| `static::fromLivewire($value)`          | `self`                        | Accepts a case, the `toLivewire()` array, or an object with `value` |
-| `case()` (`__invoke`)                   | `int\|string`                 | `$case()`                                |
+| `static::fromLivewire($value)`          | `self`                        | Accepts a case, the `toLivewire()` array, or an object with `value`; throws `InvalidArgumentException` otherwise |
 | `static::CASENAME()` (`__callStatic`)   | `int\|string`                 | Throws `UndefinedCaseError` for unknown  |
 | `castUsing(array $args)`                | `CastsAttributes`             | Called by Laravel only if the enum implements `Castable` |
 
@@ -310,6 +313,8 @@ Livewire 3 hydrates backed enums natively, so no wiring is required — and none
 - **`Cannot validate against the enum, the class X doesn't exist`** — the rule constructor was given an FQCN that can't be autoloaded. Check namespace and `composer dump-autoload`.
 - **`ItemNotFoundException` from `getInstance()`/`getName()`/`getValue()` or a cast attribute** — the value or name you passed doesn't match any case, or it has the wrong type (`'10'` vs `10`). For user input, validate first with `EnumValue`/`EnumName` and convert to the backing type.
 - **`Cannot instantiate enum App\Enums\X`** — a cast uses `:nullable` or `:collection` but the enum doesn't `implement Castable`. Add the interface.
+- **`UnexpectedValueException` when reading a `:collection` attribute** — the column doesn't hold a JSON array (truncated or hand-edited data, a JSON `null`, a JSON scalar). Repair the row; the cast refuses to read it as an empty list, because the next save would overwrite the data.
+- **`Object of type App\Enums\X is not callable`** — code calls `$case()`. Use `$case->value` (hard rule 14).
 - **`getLocalizedName()` returns the raw name in production** — your `lang/{locale}/enums.php` doesn't have the case, OR the translator isn't bound (rare in Laravel). Check `php artisan tinker: Lang::has('enums.'.UserRole::class.'.ADMIN')`.
 - **`make:enum Domain/Foo` lands in `App\Enums\Domain\Foo`** — names are nested below `App\Enums` unless they start with the root namespace. Use `php artisan make:enum App/Domain/Foo` for `App\Domain\Foo`.
 

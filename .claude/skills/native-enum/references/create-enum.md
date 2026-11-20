@@ -139,4 +139,4 @@ enum OrderStatus: int implements LocalizedEnum, HasMetadata
 }
 ```
 
-The trait stays compatible as long as the other interfaces don't conflict on method names. Besides the static helpers, `BaseEnum` defines three instance methods: `name()`, `toLivewire()` and `__invoke()`.
+The trait stays compatible as long as the other interfaces don't conflict on method names. Besides the static helpers, `BaseEnum` defines two instance methods: `name()` and `toLivewire()`.

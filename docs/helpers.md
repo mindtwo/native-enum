@@ -79,20 +79,26 @@ Two rules apply to all lookups:
 | `UserRole::hasName('ADMIN')` | `true` |
 | `UserRole::isLocalizable()` | `false`, or `true` if the enum implements `LocalizedEnum` |
 
-`hasValue()` is strict by default. With `false` as the second argument it compares the string forms, so `'10'` matches `10`.
+`hasValue()` is strict by default. With `false` as the second argument it compares the string forms, so `'10'` matches `10`. Only ints and strings are compared this way. Any other type, such as `true`, `10.0` or an array, never matches.
 
-## Value shortcuts
+## Value shortcut
 
-Calling a case name as a static method returns its value, and so does invoking a case:
+Calling a case name as a static method returns its value:
 
 ```php
 UserRole::ADMIN();        // 10
-
-$role = UserRole::CUSTOMER;
-$role();                  // 50
 ```
 
 A name that is not a case, such as `UserRole::UNKNOWN()`, throws `mindtwo\NativeEnum\Exceptions\UndefinedCaseError`. Its message matches PHP's own "Undefined constant" wording.
+
+A case you already hold is not callable. Read its value with `->value`:
+
+```php
+$role = UserRole::CUSTOMER;
+$role->value;             // 50
+```
+
+Earlier releases also allowed `$role()`. That was removed, because Laravel's collection methods treat every callable argument as a callback: `collect($roles)->contains(UserRole::ADMIN)` called the case instead of looking for it and returned a wrong result.
 
 ## Random cases
 

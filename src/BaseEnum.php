@@ -6,6 +6,7 @@ use Illuminate\Contracts\Database\Eloquent\CastsAttributes;
 use Illuminate\Support\Arr;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Lang;
+use InvalidArgumentException;
 use mindtwo\NativeEnum\Casts\EnumCast;
 use mindtwo\NativeEnum\Casts\EnumCollectionCast;
 use mindtwo\NativeEnum\Contracts\LocalizedEnum;
@@ -100,6 +101,10 @@ trait BaseEnum
     /**
      * Check that the enum contains a specific value.
      *
+     * Non-strict mode compares the string forms of ints and strings only.
+     * Any other type is never a value: casting it would raise an error for
+     * arrays and let `true` or `1.0` pass as the value `1`.
+     *
      * @param  mixed  $value
      * @param  bool  $strict  (Optional, defaults to True)
      */
@@ -109,6 +114,10 @@ trait BaseEnum
 
         if ($strict) {
             return in_array($value, $validValues, true);
+        }
+
+        if (! is_int($value) && ! is_string($value)) {
+            return false;
         }
 
         return in_array((string) $value, array_map('strval', $validValues), true);
@@ -269,18 +278,30 @@ trait BaseEnum
      *
      * Accepts a case, the array produced by `toLivewire()` (which is what
      * Livewire passes back), or an object with a `value` property.
+     *
+     * @throws InvalidArgumentException
      */
     public static function fromLivewire($enum): self
     {
-        if (is_a($enum, self::class)) {
+        if ($enum instanceof self) {
             return $enum;
         }
 
-        if (is_array($enum)) {
-            $enum = (object) $enum;
+        $value = match (true) {
+            is_array($enum) => $enum['value'] ?? null,
+            is_object($enum) => $enum->value ?? null,
+            default => null,
+        };
+
+        if (! is_int($value) && ! is_string($value)) {
+            $enumClass = static::class;
+
+            throw new InvalidArgumentException(
+                "Cannot create a {$enumClass} case from a Livewire payload without an int or string value."
+            );
         }
 
-        return self::from($enum->value);
+        return self::from($value);
     }
 
     /**
@@ -292,12 +313,6 @@ trait BaseEnum
             'value' => $this->value,
             'label' => $this->name,
         ];
-    }
-
-    /** Return the enum's value when it's $invoked(). */
-    public function __invoke()
-    {
-        return $this->value;
     }
 
     /** Return the enum's value when it's called ::STATICALLY(). */

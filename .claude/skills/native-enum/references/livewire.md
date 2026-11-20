@@ -88,7 +88,7 @@ The trait has two conversion helpers:
 | `UserRole::fromLivewire(['value' => 50])`          | `UserRole::CUSTOMER`                  |
 | `UserRole::fromLivewire((object) ['value' => 50])` | `UserRole::CUSTOMER`                  |
 
-`fromLivewire()` accepts a case, the array produced by `toLivewire()`, or an object with a `value` property. Livewire calls these methods only on classes that implement `Livewire\Wireable`, and it passes the array form back.
+`fromLivewire()` accepts a case, the array produced by `toLivewire()`, or an object with a `value` property. Anything else throws `InvalidArgumentException`: a raw value such as `50`, or an array or object whose `value` is missing or is not an int or string. Livewire calls these methods only on classes that implement `Livewire\Wireable`, and it passes the array form back.
 
 ## Gotchas
 

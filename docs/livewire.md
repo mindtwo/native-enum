@@ -43,6 +43,8 @@ The trait also has two conversion helpers:
 
 `label` is the case name, not the translated label.
 
+`fromLivewire()` throws `InvalidArgumentException` for anything else: a raw value such as `50`, or an array or object whose `value` is missing or is not an int or string.
+
 Livewire calls these methods only on classes that implement `Livewire\Wireable`. An enum does not need that interface, because Livewire already handles backed enums as described above. The helpers are there for code that wants the `value` and `label` shape.
 
 ## Related

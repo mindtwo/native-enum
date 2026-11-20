@@ -6,10 +6,14 @@ use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Lang;
 use Illuminate\Translation\ArrayLoader;
 use Illuminate\Translation\Translator;
+use InvalidArgumentException;
 use mindtwo\NativeEnum\Tests\Enums\LocalizedTestEnum;
 use mindtwo\NativeEnum\Tests\Enums\NumericStringTestEnum;
+use mindtwo\NativeEnum\Tests\Enums\StringTestEnum;
 use mindtwo\NativeEnum\Tests\Enums\TestEnum;
+use mindtwo\NativeEnum\Tests\Enums\ZeroBasedTestEnum;
 use PHPUnit\Framework\TestCase;
+use stdClass;
 
 class EnumTest extends TestCase
 {
@@ -85,6 +89,25 @@ class EnumTest extends TestCase
         $this->assertFalse(TestEnum::hasName('NOT_A_CASE'));
     }
 
+    /**
+     * @dataProvider valuesThatAreNeitherIntNorString
+     */
+    public function testHasValueNonStrictRejectsValuesThatAreNeitherIntNorString(string $enumClass, mixed $value): void
+    {
+        $this->assertFalse($enumClass::hasValue($value, false));
+    }
+
+    public static function valuesThatAreNeitherIntNorString(): array
+    {
+        return [
+            'array' => [TestEnum::class, [1]],
+            'true' => [TestEnum::class, true],
+            'float' => [TestEnum::class, 1.0],
+            'null' => [StringTestEnum::class, null],
+            'object' => [TestEnum::class, new stdClass()],
+        ];
+    }
+
     public function testGetNameReturnsNameForValue()
     {
         $this->assertSame('EXAMPLE_1', TestEnum::getName(1));
@@ -109,10 +132,15 @@ class EnumTest extends TestCase
         $this->assertSame(2, TestEnum::getValue('EXAMPLE_2'));
     }
 
-    public function testInvokeReturnsPrimitiveValue()
+    public function testCasesAreNotCallable(): void
     {
-        $this->assertSame(1, (TestEnum::EXAMPLE_1)());
-        $this->assertSame(2, (TestEnum::EXAMPLE_2)());
+        $this->assertFalse(is_callable(TestEnum::EXAMPLE_1));
+    }
+
+    public function testCollectionContainsMatchesOnlyTheGivenCase(): void
+    {
+        $this->assertFalse(collect([TestEnum::EXAMPLE_2])->contains(TestEnum::EXAMPLE_1));
+        $this->assertTrue(collect([ZeroBasedTestEnum::None])->contains(ZeroBasedTestEnum::None));
     }
 
     public function testCallStaticReturnsPrimitiveValueForCaseName()
@@ -152,6 +180,28 @@ class EnumTest extends TestCase
         $wire = TestEnum::EXAMPLE_2->toLivewire();
 
         $this->assertSame(TestEnum::EXAMPLE_2, TestEnum::fromLivewire($wire));
+    }
+
+    /**
+     * @dataProvider malformedLivewirePayloads
+     */
+    public function testFromLivewireThrowsForMalformedPayload(mixed $payload): void
+    {
+        $this->expectException(InvalidArgumentException::class);
+
+        ZeroBasedTestEnum::fromLivewire($payload);
+    }
+
+    public static function malformedLivewirePayloads(): array
+    {
+        return [
+            'array without value' => [['label' => 'Basic']],
+            'object without value' => [(object) ['label' => 'Basic']],
+            'null value' => [['value' => null]],
+            'boolean value' => [['value' => false]],
+            'raw value' => [1],
+            'null' => [null],
+        ];
     }
 
     public function testAsServableEnumExposesNameValueAndLocalizedName()

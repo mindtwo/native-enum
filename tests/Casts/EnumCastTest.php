@@ -104,6 +104,7 @@ class EnumCastTest extends TestCase
      */
     private function makeModel(): object
     {
-        return new class {};
+        return new class {
+        };
     }
 }

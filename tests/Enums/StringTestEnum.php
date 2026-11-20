@@ -10,4 +10,7 @@ enum StringTestEnum: string
 
     case Red = 'red';
     case Blue = 'blue';
+    case Empty = '';
+    case Padded = ' padded ';
+    case WithComma = 'red,blue';
 }

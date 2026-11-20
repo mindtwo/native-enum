@@ -74,7 +74,7 @@ protected $casts = [
 
 For `VARCHAR`/`TEXT` columns. The package serializes to `"10,50"` and reads back, trimming whitespace and converting the parts to ints for int-backed enums. An empty string reads as `[]`. Parts that aren't valid ints (`1abc`, `abc`) are not coerced and throw `ItemNotFoundException`. A lone `0` reads as the zero case if the enum has one, and as `[]` otherwise. **Caveats**:
 
-- Cannot represent cases whose primitive value contains `,`. Don't use this for `string`-backed enums whose values include commas.
+- Comma storage is intentionally unescaped. String-backed values must not be empty, contain a comma, or have leading or trailing whitespace. Writing one of these values throws `InvalidArgumentException`; use the default JSON format instead.
 - Not searchable without `LIKE` matching. For real querying, use JSON.
 
 ### Combining modifiers

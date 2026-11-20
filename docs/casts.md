@@ -115,7 +115,7 @@ On reading, whitespace around each value is trimmed, values of an int-backed enu
 
 Caveats:
 
-- A string-backed enum whose values contain a comma cannot be stored this way.
+- Comma storage is intentionally unescaped. String-backed values must not be empty, contain a comma, or have leading or trailing whitespace. Writing one of these values throws `InvalidArgumentException`; use the default JSON format instead.
 - The column cannot be queried or indexed per value. Prefer JSON if you need to search it.
 
 ## Related

@@ -3,6 +3,7 @@
 namespace mindtwo\NativeEnum\Tests\Casts;
 
 use Illuminate\Support\ItemNotFoundException;
+use InvalidArgumentException;
 use mindtwo\NativeEnum\Casts\EnumCollectionCast;
 use mindtwo\NativeEnum\Exceptions\NotNullableEnumField;
 use mindtwo\NativeEnum\Tests\Enums\StringTestEnum;
@@ -131,6 +132,39 @@ class EnumCollectionCastTest extends TestCase
         $this->assertSame([StringTestEnum::Red, StringTestEnum::Blue], $getValue);
     }
 
+    /**
+     * @dataProvider unsafeCommaStringValues
+     */
+    public function testCommaFormatRejectsUnsafeStringValues(StringTestEnum $enum): void
+    {
+        $cast = new EnumCollectionCast(StringTestEnum::class, 'comma');
+
+        $this->expectException(InvalidArgumentException::class);
+        $this->expectExceptionMessage('Use JSON storage instead.');
+
+        $cast->set($this->model(), 'colors', [$enum], []);
+    }
+
+    public static function unsafeCommaStringValues(): array
+    {
+        return [
+            'empty' => [StringTestEnum::Empty],
+            'padded' => [StringTestEnum::Padded],
+            'comma' => [StringTestEnum::WithComma],
+        ];
+    }
+
+    public function testJsonFormatRoundtripsStringsUnsafeForCommaStorage(): void
+    {
+        $cast = new EnumCollectionCast(StringTestEnum::class);
+        $values = [StringTestEnum::Empty, StringTestEnum::Padded, StringTestEnum::WithComma];
+
+        $setValue = $cast->set($this->model(), 'colors', $values, []);
+
+        $this->assertSame('[""," padded ","red,blue"]', $setValue);
+        $this->assertSame($values, $cast->get($this->model(), 'colors', $setValue, []));
+    }
+
     public function testGetReturnsNullWhenNullableAndValueIsNull(): void
     {
         $cast = new EnumCollectionCast(TestEnum::class, 'nullable');
@@ -170,6 +204,7 @@ class EnumCollectionCastTest extends TestCase
      */
     private function model(): object
     {
-        return new class {};
+        return new class {
+        };
     }
 }

@@ -5,6 +5,7 @@ namespace mindtwo\NativeEnum\Casts;
 use BadMethodCallException;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Arr;
+use InvalidArgumentException;
 use mindtwo\NativeEnum\BaseEnum;
 use mindtwo\NativeEnum\Exceptions\NotNullableEnumField;
 use TypeError;
@@ -84,7 +85,21 @@ class EnumCollectionCast extends Cast
     protected function toDatabase(array $enums): string
     {
         if ($this->format === self::FORMAT_COMMA) {
-            return implode(',', array_map(fn ($enum) => $enum->value, $enums));
+            $values = array_map(fn ($enum) => $enum->value, $enums);
+
+            foreach ($values as $value) {
+                $isUnsafeString = is_string($value)
+                    && ($value === '' || trim($value) !== $value || str_contains($value, ','));
+
+                if ($isUnsafeString) {
+                    throw new InvalidArgumentException(
+                        'Comma storage cannot represent empty, comma-containing, or padded string values. '.
+                        'Use JSON storage instead.'
+                    );
+                }
+            }
+
+            return implode(',', $values);
         }
 
         return json_encode(array_map(fn ($enum) => $enum->value, $enums));

@@ -269,11 +269,18 @@ trait BaseEnum
 
     /**
      * Livewire friendly method to create an enum instance.
+     *
+     * Accepts a case, the array produced by `toLivewire()` (which is what
+     * Livewire passes back), or an object with a `value` property.
      */
     public static function fromLivewire($enum): self
     {
         if (is_a($enum, self::class)) {
             return $enum;
+        }
+
+        if (is_array($enum)) {
+            $enum = (object) $enum;
         }
 
         return self::from($enum->value);

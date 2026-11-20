@@ -143,6 +143,13 @@ class EnumTest extends TestCase
         $this->assertSame(TestEnum::EXAMPLE_2, TestEnum::fromLivewire($obj));
     }
 
+    public function testFromLivewireReturnsCaseForArrayProducedByToLivewire()
+    {
+        $wire = TestEnum::EXAMPLE_2->toLivewire();
+
+        $this->assertSame(TestEnum::EXAMPLE_2, TestEnum::fromLivewire($wire));
+    }
+
     public function testAsServableEnumExposesNameValueAndLocalizedName()
     {
         $served = TestEnum::asServableEnum();

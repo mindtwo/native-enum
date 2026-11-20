@@ -93,6 +93,18 @@ class EnumTest extends TestCase
         $this->assertSame(TestEnum::EXAMPLE_2, TestEnum::getInstance(2));
     }
 
+    /**
+     * Regression: `getValue()` previously used the deprecated
+     * `optional($name)->name ?? $name` pattern. With both string and case
+     * inputs, behavior must remain identical to the original implementation.
+     */
+    public function testGetValueAcceptsBothStringAndCase()
+    {
+        $this->assertSame(1, TestEnum::getValue('EXAMPLE_1'));
+        $this->assertSame(1, TestEnum::getValue(TestEnum::EXAMPLE_1));
+        $this->assertSame(2, TestEnum::getValue('EXAMPLE_2'));
+    }
+
     public function testInvokeReturnsPrimitiveValue()
     {
         $this->assertSame(1, (TestEnum::EXAMPLE_1)());

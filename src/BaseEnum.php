@@ -73,15 +73,20 @@ trait BaseEnum
     }
 
     /**
-     * Get the value for a single enum name.
+     * Get the value for a single enum name or case.
+     *
+     * Accepts either a case instance (returns its primitive value) or a case
+     * name string (looks up the matching case and returns its value).
      *
      * @return mixed
+     *
+     * @throws \Illuminate\Support\ItemNotFoundException if no case matches
      */
     public static function getValue(self|string $name)
     {
-        return collect(static::cases())->sole(function ($case) use ($name) {
-            return (optional($name)->name ?? $name) === $case->name;
-        })->value;
+        $caseName = $name instanceof self ? $name->name : $name;
+
+        return collect(static::cases())->sole(fn ($case) => $case->name === $caseName)->value;
     }
 
     /**
